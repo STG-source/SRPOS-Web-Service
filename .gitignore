@@ -1,5 +1,11 @@
-POS_2011-app.xml
-POS_2011.swf
+## Ignore Files
+##################
+*.xml
+*.swf
+*.css
+
+## Ignore Direcory
+#####################
 icons/
 images/
-smit.css
+
