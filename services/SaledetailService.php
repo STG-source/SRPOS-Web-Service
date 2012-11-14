@@ -121,7 +121,7 @@ class SaledetailService {
 	 * 
 	 * @return stdClass
 	 */
-	public function createSaledetail($item) {
+	public function createSaledetail($item, $doOnce = true) {
 
 		$stmt = mysqli_prepare($this->connection, "INSERT INTO $this->tablename (saleIndex, saleNo, saleType, customerIndex, saleDone, creditCardID, approvalCode, saleTotalAmount, saleTotalDiscount, saleTotalBalance, creditCardAuthorizer, CRE_DTE, CRE_USR, UPD_DTE, UPD_USR, DEL_DTE, DEL_USR) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)");
 		$this->throwExceptionOnError();
@@ -134,8 +134,9 @@ class SaledetailService {
 
 		$autoid = $item->saleIndex;
 
-		mysqli_stmt_free_result($stmt);		
-		mysqli_close($this->connection);
+		mysqli_stmt_free_result($stmt);
+		if ($doOnce == true)
+			mysqli_close($this->connection);
 
 		return $autoid;
 	}
@@ -373,6 +374,36 @@ class SaledetailService {
 		mysqli_close($this->connection);
 	}
 
+
+	public function testStubucy() {
+	    /** Return Magic Number **/
+		return (String)12123;
+	}
+
+}
+
+class Saledetail {
+/**
+'isiiissdddsssssss', $item->saleIndex, $item->saleNo, $item->saleType, $item->customerIndex, $item->saleDone, $item->creditCardID, $item->approvalCode, $item->saleTotalAmount, $item->saleTotalDiscount, $item->saleTotalBalance, $item->creditCardAuthorizer, $item->CRE_DTE->toString('YYYY-MM-dd HH:mm:ss'), $item->CRE_USR, $item->UPD_DTE->toString('YYYY-MM-dd HH:mm:ss'), $item->UPD_USR, $item->DEL_DTE->toString('YYYY-MM-dd HH:mm:ss'), $item->DEL_USR
+**/
+
+	var $saleIndex;
+	var $saleNo;
+	var $saleType;
+	var $customerIndex;
+	var $saleDone;
+	var $creditCardID;
+	var $approvalCode;
+	var $saleTotalAmount;
+	var $saleTotalDiscount;
+	var $saleTotalBalance;
+	var $creditCardAuthorizer;
+	var $CRE_DTE;
+	var $CRE_USR;
+	var $UPD_DTE;
+	var $UPD_USR;
+	var $DEL_DTE;
+	var $DEL_USR;
 }
 
 ?>

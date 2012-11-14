@@ -18,6 +18,9 @@
  *  information at http://www.adobe.com/go/flex_security
  *
  */
+
+require 'SaledetailService.php';
+
 class CalculatedlistService {
 
 	var $username = "root";
@@ -152,6 +155,27 @@ class CalculatedlistService {
 			$doResult = $this->createCalculatedlist($row, false);
 		}
 
+		$saleDetServ = new SaledetailService();
+		$saleDet       = new Saledetail();
+		$saleDet->saleIndex = 0;
+		$saleDet->saleNo = $rows[0]->saleNo;
+		$saleDet->saleType = 5;
+		$saleDet->customerIndex = 5;
+		$saleDet->saleDone = 1;
+		$saleDet->creditCardID = "vravo";
+		$saleDet->approvalCode = "avo";
+		$saleDet->saleTotalAmount = 1005;
+		$saleDet->saleTotalDiscount = 1002;
+		$saleDet->saleTotalBalance =  1003;
+		$saleDet->creditCardAuthorizer  = "avozea";
+		$saleDet->CRE_DTE = $rows[0]->CRE_DTE;
+		$saleDet->CRE_USR = $rows[0]->CRE_USR;
+		$saleDet->UPD_DTE = $rows[0]->UPD_DTE;
+		$saleDet->UPD_USR = $rows[0]->UPD_USR;
+		$saleDet->DEL_DTE = $rows[0]->DEL_DTE;
+		$saleDet->DEL_USR = $rows[0]->DEL_USR;
+		$doResult = $saleDetServ->createSaledetail($saleDet ,false);
+
 		mysqli_close($this->connection);
 		return $doResult;
 	}
@@ -281,6 +305,18 @@ class CalculatedlistService {
 			$msg = mysqli_errno($link) . ": " . mysqli_error($link);
 			throw new Exception('MySQL Error - '. $msg);
 		}		
+	}
+
+
+	/**
+	 * For client testing
+	 */
+	public function testStub() {
+		$saleDetServ = new SaledetailService();
+		//return $this->saleDetail->tablename; // OK
+		//return $this->saleDetail.tablename;   //  NG
+
+		return $saleDetServ->testStubucy();
 	}
 
 }
