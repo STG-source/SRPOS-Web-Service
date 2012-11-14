@@ -119,7 +119,7 @@ class CalculatedlistService {
 	 * 
 	 * @return stdClass
 	 */
-	public function createCalculatedlist($item) {
+	public function createCalculatedlist($item, $doOnce = true) {
 
 		$stmt = mysqli_prepare($this->connection, "INSERT INTO $this->tablename (saleNo, salePrice, saleQTY, CRE_USR, CRE_DTE, UPD_USR, UPD_DTE, DEL_USR, DEL_DTE) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)");
 		$this->throwExceptionOnError();
@@ -127,16 +127,33 @@ class CalculatedlistService {
 		mysqli_stmt_bind_param($stmt, 'sddssssss', $item->saleNo, $item->salePrice, $item->saleQTY, $item->CRE_USR, $item->CRE_DTE->toString('YYYY-MM-dd HH:mm:ss'), $item->UPD_USR, $item->UPD_DTE->toString('YYYY-MM-dd HH:mm:ss'), $item->DEL_USR, $item->DEL_DTE->toString('YYYY-MM-dd HH:mm:ss'));
 		$this->throwExceptionOnError();
 
-		mysqli_stmt_execute($stmt);		
+		mysqli_stmt_execute($stmt);
 		$this->throwExceptionOnError();
 
 		$autoid = mysqli_stmt_insert_id($stmt);
 
-		mysqli_stmt_free_result($stmt);		
-		mysqli_close($this->connection);
+		mysqli_stmt_free_result($stmt);
+		if ($doOnce == true)
+			mysqli_close($this->connection);
 
 		return $autoid;
 	}
+
+	/**
+	 * Create calculated list on rows.
+	 */
+	public function createCalculatedRows($rows) {
+
+		$doResult = 0;
+
+		foreach ($rows as $row) {
+			$doResult = $this->createCalculatedlist($row, false);
+		}
+
+		mysqli_close($this->connection);
+		return $doResult;
+	}
+
 
 	/**
 	 * Updates the passed item in the table.
@@ -263,6 +280,7 @@ class CalculatedlistService {
 			throw new Exception('MySQL Error - '. $msg);
 		}		
 	}
+
 }
 
 ?>
