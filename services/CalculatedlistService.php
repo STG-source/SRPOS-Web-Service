@@ -147,7 +147,7 @@ class CalculatedlistService {
 	/**
 	 * Create calculated list on rows.
 	 */
-	public function createCalculatedRows($rows) {
+	public function createCalculatedRows($rows ,$saleDet) {
 
 		$doResult = 0;
 
@@ -156,24 +156,6 @@ class CalculatedlistService {
 		}
 
 		$saleDetServ = new SaledetailService();
-		$saleDet       = new Saledetail();
-		$saleDet->saleIndex = 0;
-		$saleDet->saleNo = $rows[0]->saleNo;
-		$saleDet->saleType = 5;
-		$saleDet->customerIndex = 5;
-		$saleDet->saleDone = 1;
-		$saleDet->creditCardID = "vravo";
-		$saleDet->approvalCode = "avo";
-		$saleDet->saleTotalAmount = 1005;
-		$saleDet->saleTotalDiscount = 1002;
-		$saleDet->saleTotalBalance =  1003;
-		$saleDet->creditCardAuthorizer  = "avozea";
-		$saleDet->CRE_DTE = $rows[0]->CRE_DTE;
-		$saleDet->CRE_USR = $rows[0]->CRE_USR;
-		$saleDet->UPD_DTE = $rows[0]->UPD_DTE;
-		$saleDet->UPD_USR = $rows[0]->UPD_USR;
-		$saleDet->DEL_DTE = $rows[0]->DEL_DTE;
-		$saleDet->DEL_USR = $rows[0]->DEL_USR;
 		$doResult = $saleDetServ->createSaledetail($saleDet ,false);
 
 		mysqli_close($this->connection);
