@@ -44,6 +44,8 @@ class CalculatedlistService {
 	  						);
 
 		$this->throwExceptionOnError($this->connection);
+
+		mysqli_query($this->connection, "SET NAMES 'utf8'");
 	}
 
 	/**
