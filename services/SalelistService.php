@@ -360,7 +360,7 @@ class SalelistService {
 			$row->salePrice, 
 			$row->saleQTY,
 			$row->stockQTY,
-			$row->saleDiscout,
+			$row->saleDiscount,
 			$row->saleClass,
 			$row->CRE_USR,
 			$row->CRE_DTE);
@@ -379,7 +379,7 @@ class SalelistService {
 			$row->salePrice, 
 			$row->saleQTY,
 			$row->stockQTY,
-			$row->saleDiscout,
+			$row->saleDiscount,
 			$row->saleClass,
 			$row->CRE_USR,
 			$row->CRE_DTE);
