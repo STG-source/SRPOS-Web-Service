@@ -116,33 +116,6 @@ class SitemService {
 	      return null;
 		}
 	}
-	
-	public function get_itemByIDtest($itemID) {
-//	public function get_itemByIDtest() {
-	
-		$stmt = mysqli_prepare($this->connection, "SELECT * FROM $this->tablename where itemIndex=?");
-		$this->throwExceptionOnError();
-		
-		mysqli_stmt_bind_param($stmt, 'i', $itemID);		
-		$this->throwExceptionOnError();
-		
-		mysqli_stmt_execute($stmt);
-		$this->throwExceptionOnError();
-		
-		mysqli_stmt_bind_result($stmt, $row->itemIndex, $row->itemID, $row->itembarcodeID, $row->itemName, $row->itemDetail, $row->itemPrice, $row->itemLatestCost, $row->itemStock, $row->itemProPoint, $row->itemProStart, $row->itemProEnd, $row->CRE_DTE, $row->CRE_USR, $row->UPD_DTE, $row->UPD_USR, $row->DEL_DTE, $row->DEL_USR, $row->itemCatagoryIndex, $row->itemUnitIndex, $row->itemSizeIndex, $row->itemLocationIndex);
-		
-		if(mysqli_stmt_fetch($stmt)) {
-	      $row->itemProStart = new DateTime($row->itemProStart);
-	      $row->itemProEnd = new DateTime($row->itemProEnd);
-	      $row->CRE_DTE = new DateTime($row->CRE_DTE);
-	      $row->UPD_DTE = new DateTime($row->UPD_DTE);
-	      $row->DEL_DTE = new DateTime($row->DEL_DTE);
-	      return $row;
-		} else {
-	      return null;
-		}
-//		return 1;
-	}
 
 	/**
 	 * Returns the item corresponding to the value specified for the primary key.
@@ -575,7 +548,6 @@ class SitemService {
 		mysqli_close($this->connection);
 		
 		return $rec_count;
-//		countByCategoryId($catagoryID, $keyword, $keySearch);
 	}
 	
 	public function get_itemsByitemID($itemsID, $startIndex, $numItems, $keyword){
