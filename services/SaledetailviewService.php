@@ -506,12 +506,12 @@ class SaledetailviewService {
 
 		$rows = array();
 
-		mysqli_stmt_bind_result($stmt, $row->saleNo, $row->CRE_DTE, $row->fullname, $row->saleTotalAmount, $row->saleTotalDiscount, $row->saleTotalBalance,$row->CRE_USR,$row->itemIndex ,$row->saleQTY ,$row->itemLatestCost);
+		mysqli_stmt_bind_result($stmt, $row->saleNo, $row->CRE_DTE, $row->fullname, $row->saleTotalAmount, $row->saleTotalDiscount, $row->saleTotalBalance,$row->CRE_USR,$row->itemLatestCost);
 
 	    while (mysqli_stmt_fetch($stmt)) {
 	      $rows[] = $row;
 	      $row = new stdClass();
-	      mysqli_stmt_bind_result($stmt, $row->saleNo, $row->CRE_DTE, $row->fullname, $row->saleTotalAmount, $row->saleTotalDiscount, $row->saleTotalBalance,$row->CRE_USR ,$row->itemIndex ,$row->saleQTY ,$row->itemLatestCost);
+	      mysqli_stmt_bind_result($stmt, $row->saleNo, $row->CRE_DTE, $row->fullname, $row->saleTotalAmount, $row->saleTotalDiscount, $row->saleTotalBalance,$row->CRE_USR,$row->itemLatestCost);
 	    }
 
 		mysqli_stmt_free_result($stmt);
