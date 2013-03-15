@@ -26,7 +26,6 @@ class SaledetailviewService {
 	var $port = 3306;
 	var $databasename = "stechschema";
 	var $tablename = "saledetailview";
-
 	var $connection;
 
 	/**
@@ -497,6 +496,53 @@ class SaledetailviewService {
 		return $rows;
 	}
 
+	public function getSearch_ItemCosts($searchCause) {
+
+	    $stmt = mysqli_prepare($this->connection, $searchCause);
+		$this->throwExceptionOnError();
+
+		mysqli_stmt_execute($stmt);
+		$this->throwExceptionOnError();
+
+		$rows = array();
+
+		mysqli_stmt_bind_result($stmt, $row->saleNo, $row->CRE_DTE, $row->fullname, $row->saleTotalAmount, $row->saleTotalDiscount, $row->saleTotalBalance,$row->CRE_USR,$row->itemLatestCost);
+
+	    while (mysqli_stmt_fetch($stmt)) {
+	      $rows[] = $row;
+	      $row = new stdClass();
+	      mysqli_stmt_bind_result($stmt, $row->saleNo, $row->CRE_DTE, $row->fullname, $row->saleTotalAmount, $row->saleTotalDiscount, $row->saleTotalBalance,$row->CRE_USR,$row->itemLatestCost);
+	    }
+
+		mysqli_stmt_free_result($stmt);
+		mysqli_close($this->connection);
+
+		return $rows;
+	}
+	
+	public function getSearch_ItemProfit($searchCause) {
+
+	    $stmt = mysqli_prepare($this->connection, $searchCause);
+		$this->throwExceptionOnError();
+
+		mysqli_stmt_execute($stmt);
+		$this->throwExceptionOnError();
+
+		$rows = array();
+
+		mysqli_stmt_bind_result($stmt, $row->saleNo, $row->itemName, $row->saleQTY, $row->salePrice, $row->itemLatestCost);
+
+	    while (mysqli_stmt_fetch($stmt)) {
+	      $rows[] = $row;
+	      $row = new stdClass();
+	      mysqli_stmt_bind_result($stmt, $row->saleNo, $row->itemName, $row->saleQTY, $row->salePrice, $row->itemLatestCost);
+	    }
+
+		mysqli_stmt_free_result($stmt);
+		mysqli_close($this->connection);
+
+		return $rows;
+	}
 }
 
 
