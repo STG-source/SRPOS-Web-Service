@@ -519,6 +519,30 @@ class SaledetailviewService {
 
 		return $rows;
 	}
+
+	public function getSearch_ItemProfit($searchCause) {
+
+	    $stmt = mysqli_prepare($this->connection, $searchCause);
+		$this->throwExceptionOnError();
+
+		mysqli_stmt_execute($stmt);
+		$this->throwExceptionOnError();
+
+		$rows = array();
+
+		mysqli_stmt_bind_result($stmt, $row->saleNo, $row->itemID, $row->itemName, $row->saleQTY, $row->salePrice, $row->itemLatestCost, $row->CRE_USR);
+
+	    while (mysqli_stmt_fetch($stmt)) {
+	      $rows[] = $row;
+	      $row = new stdClass();
+	      mysqli_stmt_bind_result($stmt, $row->saleNo, $row->itemID, $row->itemName, $row->saleQTY, $row->salePrice, $row->itemLatestCost, $row->CRE_USR);
+	    }
+
+		mysqli_stmt_free_result($stmt);
+		mysqli_close($this->connection);
+
+		return $rows;
+	}
 }
 
 
