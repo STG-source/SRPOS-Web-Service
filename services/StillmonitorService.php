@@ -332,7 +332,75 @@ class StillmonitorService {
 	
 	    return $rows;
 	}
+
+	public function getCutBalance($searchCause) {
+		$stmt = mysqli_prepare($this->connection, $searchCause);		
+		$this->throwExceptionOnError();
+		
+		mysqli_stmt_execute($stmt);
+		$this->throwExceptionOnError();
+		
+		$rows = array();
+		
+		mysqli_stmt_bind_result($stmt, $row->Today,$row->cutCount,$row->cutBalance);
+		
+	    while (mysqli_stmt_fetch($stmt)) {
+	      $rows[] = $row;
+	      $row = new stdClass();
+	      mysqli_stmt_bind_result($stmt, $row->Today,$row->cutCount,$row->cutBalance);
+	    }
+		
+		mysqli_stmt_free_result($stmt);
+	    mysqli_close($this->connection);
 	
+	    return $rows;
+	}
+
+	public function getSellBalance($searchCause) {
+		$stmt = mysqli_prepare($this->connection, $searchCause);		
+		$this->throwExceptionOnError();
+		
+		mysqli_stmt_execute($stmt);
+		$this->throwExceptionOnError();
+		
+		$rows = array();
+		
+		mysqli_stmt_bind_result($stmt, $row->Today, $row->TotalSell,$row->FirstBill,$row->LastBill);
+		
+	    while (mysqli_stmt_fetch($stmt)) {
+	      $rows[] = $row;
+	      $row = new stdClass();
+	      mysqli_stmt_bind_result($stmt, $row->Today, $row->TotalSell,$row->FirstBill,$row->LastBill);
+	    }
+		
+		mysqli_stmt_free_result($stmt);
+	    mysqli_close($this->connection);
+	
+	    return $rows;
+	}
+
+	public function getUplimit($searchCause) {
+		$stmt = mysqli_prepare($this->connection, $searchCause);		
+		$this->throwExceptionOnError();
+		
+		mysqli_stmt_execute($stmt);
+		$this->throwExceptionOnError();
+		
+		$rows = array();
+		
+		mysqli_stmt_bind_result($stmt, $row->Today, $row->TotalUplimit,$row->uplimitBill);
+		
+	    while (mysqli_stmt_fetch($stmt)) {
+	      $rows[] = $row;
+	      $row = new stdClass();
+	      mysqli_stmt_bind_result($stmt, $row->Today, $row->TotalUplimit,$row->uplimitBill);
+	    }
+		
+		mysqli_stmt_free_result($stmt);
+	    mysqli_close($this->connection);
+	
+	    return $rows;
+	}
 }
 
 ?>
