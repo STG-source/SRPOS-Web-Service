@@ -431,6 +431,29 @@ class SalelistService {
 		return $rows;
 	}
 
+	public function getSearch_CostByXXX($searchCause) {
+
+	    $stmt = mysqli_prepare($this->connection, $searchCause);
+		$this->throwExceptionOnError();
+
+		mysqli_stmt_execute($stmt);
+		$this->throwExceptionOnError();
+
+		$rows = array();
+
+		mysqli_stmt_bind_result($stmt, $row->CRE_YEAR, $row->CRE_XXX, $row->billCount, $row->sumTotalAmount, $row->sumTotalDiscount, $row->sumTotalBalance, $row->sumLatestCost);
+
+	    while (mysqli_stmt_fetch($stmt)) {
+	      $rows[] = $row;
+	      $row = new stdClass();
+	      mysqli_stmt_bind_result($stmt, $row->CRE_YEAR, $row->CRE_XXX, $row->billCount, $row->sumTotalAmount, $row->sumTotalDiscount, $row->sumTotalBalance, $row->sumLatestCost);
+	    }
+
+		mysqli_stmt_free_result($stmt);
+		mysqli_close($this->connection);
+
+		return $rows;
+	}
 }
 
 ?>
