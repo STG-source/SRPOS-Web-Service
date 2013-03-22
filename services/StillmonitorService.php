@@ -401,6 +401,28 @@ class StillmonitorService {
 	
 	    return $rows;
 	}
-}
 
+	public function getSendBalance($searchCause) {
+		$stmt = mysqli_prepare($this->connection, $searchCause);
+		$this->throwExceptionOnError();
+
+		mysqli_stmt_execute($stmt);
+		$this->throwExceptionOnError();
+
+		$rows = array();
+
+		mysqli_stmt_bind_result($stmt, $row->Today, $row->sendBalance,$row->SendCount);
+
+	    while (mysqli_stmt_fetch($stmt)) {
+	      $rows[] = $row;
+	      $row = new stdClass();
+	      mysqli_stmt_bind_result($stmt, $row->Today, $row->sendBalance,$row->SendCount);
+	    }
+
+		mysqli_stmt_free_result($stmt);
+	    mysqli_close($this->connection);
+
+	    return $rows;
+	}
+}
 ?>
