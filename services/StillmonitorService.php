@@ -424,5 +424,28 @@ class StillmonitorService {
 
 	    return $rows;
 	}
+
+	public function getKeepBalance($searchCause) {
+		$stmt = mysqli_prepare($this->connection, $searchCause);
+		$this->throwExceptionOnError();
+
+		mysqli_stmt_execute($stmt);
+		$this->throwExceptionOnError();
+
+		$rows = array();
+
+		mysqli_stmt_bind_result($stmt, $row->actionIndex, $row->actionType,$row->actionAmount,$row->CRE_DTE,$row->CRE_USR,$row->drawerBalance);
+
+	    while (mysqli_stmt_fetch($stmt)) {
+	      $rows[] = $row;
+	      $row = new stdClass();
+	      mysqli_stmt_bind_result($stmt,  $row->actionIndex, $row->actionType,$row->actionAmount,$row->CRE_DTE,$row->CRE_USR,$row->drawerBalance);
+	    }
+
+		mysqli_stmt_free_result($stmt);
+	    mysqli_close($this->connection);
+
+	    return $rows;
+	}
 }
 ?>
