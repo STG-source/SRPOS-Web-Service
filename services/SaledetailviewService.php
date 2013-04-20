@@ -440,12 +440,12 @@ class SaledetailviewService {
 		
 		$rows = array();
 		
-		mysqli_stmt_bind_result($stmt, $row->itemIndex, $row->itemID, $row->itemName, $row->sumSoldQTY);
+		mysqli_stmt_bind_result($stmt, $row->itemIndex, $row->itemID, $row->itemName, $row->sumSoldQTY,$row->itemPrice,$row->TotalPrice);
 		
 	    while (mysqli_stmt_fetch($stmt)) {
 	      $rows[] = $row;
 	      $row = new stdClass();
-	      mysqli_stmt_bind_result($stmt, $row->itemIndex, $row->itemID, $row->itemName, $row->sumSoldQTY);
+	      mysqli_stmt_bind_result($stmt, $row->itemIndex, $row->itemID, $row->itemName, $row->sumSoldQTY,$row->itemPrice,$row->TotalPrice);
 	    }
 		
 		mysqli_stmt_free_result($stmt);		
