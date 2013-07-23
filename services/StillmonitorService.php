@@ -332,7 +332,120 @@ class StillmonitorService {
 	
 	    return $rows;
 	}
-	
-}
 
+	public function getCutBalance($searchCause) {
+		$stmt = mysqli_prepare($this->connection, $searchCause);		
+		$this->throwExceptionOnError();
+		
+		mysqli_stmt_execute($stmt);
+		$this->throwExceptionOnError();
+		
+		$rows = array();
+		
+		mysqli_stmt_bind_result($stmt, $row->Today,$row->cutCount,$row->cutBalance);
+		
+	    while (mysqli_stmt_fetch($stmt)) {
+	      $rows[] = $row;
+	      $row = new stdClass();
+	      mysqli_stmt_bind_result($stmt, $row->Today,$row->cutCount,$row->cutBalance);
+	    }
+		
+		mysqli_stmt_free_result($stmt);
+	    mysqli_close($this->connection);
+	
+	    return $rows;
+	}
+
+	public function getSellBalance($searchCause) {
+		$stmt = mysqli_prepare($this->connection, $searchCause);		
+		$this->throwExceptionOnError();
+		
+		mysqli_stmt_execute($stmt);
+		$this->throwExceptionOnError();
+		
+		$rows = array();
+		
+		mysqli_stmt_bind_result($stmt, $row->Today, $row->TotalSell,$row->FirstBill,$row->LastBill);
+		
+	    while (mysqli_stmt_fetch($stmt)) {
+	      $rows[] = $row;
+	      $row = new stdClass();
+	      mysqli_stmt_bind_result($stmt, $row->Today, $row->TotalSell,$row->FirstBill,$row->LastBill);
+	    }
+		
+		mysqli_stmt_free_result($stmt);
+	    mysqli_close($this->connection);
+	
+	    return $rows;
+	}
+
+	public function getUplimit($searchCause) {
+		$stmt = mysqli_prepare($this->connection, $searchCause);		
+		$this->throwExceptionOnError();
+		
+		mysqli_stmt_execute($stmt);
+		$this->throwExceptionOnError();
+		
+		$rows = array();
+		
+		mysqli_stmt_bind_result($stmt, $row->Today, $row->TotalUplimit,$row->uplimitBill);
+		
+	    while (mysqli_stmt_fetch($stmt)) {
+	      $rows[] = $row;
+	      $row = new stdClass();
+	      mysqli_stmt_bind_result($stmt, $row->Today, $row->TotalUplimit,$row->uplimitBill);
+	    }
+		
+		mysqli_stmt_free_result($stmt);
+	    mysqli_close($this->connection);
+	
+	    return $rows;
+	}
+
+	public function getSendBalance($searchCause) {
+		$stmt = mysqli_prepare($this->connection, $searchCause);
+		$this->throwExceptionOnError();
+
+		mysqli_stmt_execute($stmt);
+		$this->throwExceptionOnError();
+
+		$rows = array();
+
+		mysqli_stmt_bind_result($stmt, $row->Today, $row->sendBalance,$row->SendCount);
+
+	    while (mysqli_stmt_fetch($stmt)) {
+	      $rows[] = $row;
+	      $row = new stdClass();
+	      mysqli_stmt_bind_result($stmt, $row->Today, $row->sendBalance,$row->SendCount);
+	    }
+
+		mysqli_stmt_free_result($stmt);
+	    mysqli_close($this->connection);
+
+	    return $rows;
+	}
+
+	public function getKeepBalance($searchCause) {
+		$stmt = mysqli_prepare($this->connection, $searchCause);
+		$this->throwExceptionOnError();
+
+		mysqli_stmt_execute($stmt);
+		$this->throwExceptionOnError();
+
+		$rows = array();
+
+		mysqli_stmt_bind_result($stmt, $row->actionIndex, $row->actionType,$row->actionAmount,$row->CRE_DTE,$row->CRE_USR,$row->drawerBalance);
+
+	    while (mysqli_stmt_fetch($stmt)) {
+	      $rows[] = $row;
+	      $row = new stdClass();
+	      mysqli_stmt_bind_result($stmt,  $row->actionIndex, $row->actionType,$row->actionAmount,$row->CRE_DTE,$row->CRE_USR,$row->drawerBalance);
+	    }
+
+		mysqli_stmt_free_result($stmt);
+	    mysqli_close($this->connection);
+
+	    return $rows;
+	}
+}
 ?>
