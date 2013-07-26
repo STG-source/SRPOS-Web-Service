@@ -249,6 +249,29 @@ class SaledetailService {
 		return $rec_count;
 	}
 
+	public function getBillQueue($searchCause) {
+
+	    $stmt = mysqli_prepare($this->connection, $searchCause);
+		$this->throwExceptionOnError();
+
+		mysqli_stmt_execute($stmt);
+		$this->throwExceptionOnError();
+
+		$rows = array();
+
+		mysqli_stmt_bind_result($stmt, $row->CRE_DTE, $row->billCount);
+
+	    while (mysqli_stmt_fetch($stmt)) {
+	      $rows[] = $row;
+	      $row = new stdClass();
+	      mysqli_stmt_bind_result($stmt, $row->CRE_DTE, $row->billCount);
+	    }
+
+		mysqli_stmt_free_result($stmt);
+		mysqli_close($this->connection);
+
+		return $rows;
+	}
 
 	/**
 	 * Returns $numItems rows starting from the $startIndex row from the 
@@ -757,5 +780,4 @@ class Saledetail {
 	var $DEL_DTE;
 	var $DEL_USR;
 }
-
 ?>
