@@ -33,6 +33,7 @@ class SaledetailService {
 	var $table_item = "_item";
 
 	var $connection;
+	var $connection2;
 
 	/**
 	 * The constructor initializes the connection to database. Everytime a request is 
@@ -732,6 +733,230 @@ class SaledetailService {
 		return true;
 	}
 	
+	/**
+	 * Returns SaleDetail and SaleList get by SaleNo.
+	 *
+	 * Mixed Function
+	 *
+	 * 
+	 * @return stdClass
+	 */
+	public function getSaledetailSalelist_bySaleNo($saleNo) {
+	
+		// Dump Connect 2
+		
+	  	$this->connection2 = mysqli_connect(
+	  							$this->server,  
+	  							$this->username,  
+	  							$this->password, 
+	  							$this->databasename,
+	  							$this->port
+	  						);
+
+		$this->throwExceptionOnError($this->connection2);
+
+		mysqli_query($this->connection2, "SET NAMES 'utf8'");
+		
+		$stmt = mysqli_prepare($this->connection, "SELECT * FROM $this->tablename where saleNo='{$saleNo}' ");
+		//echo("SELECT * FROM $this->tablename where saleNo='{$saleNo}' ");
+		$this->throwExceptionOnError();
+
+		mysqli_stmt_execute($stmt);
+		$this->throwExceptionOnError();
+		
+		$rows_sd = array();
+		
+		mysqli_stmt_bind_result($stmt, $row->saleIndex, $row->saleNo, $row->saleType, $row->customerIndex, $row->saleDone, $row->creditCardID, $row->approvalCode, $row->saleTotalAmount, $row->saleTotalDiscount, $row->saleTotalBalance, $row->creditCardAuthorizer, $row->CRE_DTE, $row->CRE_USR, $row->UPD_DTE, $row->UPD_USR, $row->DEL_DTE, $row->DEL_USR);
+		
+	    while (mysqli_stmt_fetch($stmt)) {
+	      $row->CRE_DTE = new DateTime($row->CRE_DTE);
+	      $row->UPD_DTE = new DateTime($row->UPD_DTE);
+	      $row->DEL_DTE = new DateTime($row->DEL_DTE);
+	      $rows_sd[] = $row;
+	      $row = new stdClass();
+	      mysqli_stmt_bind_result($stmt, $row->saleIndex, $row->saleNo, $row->saleType , $row->customerIndex, $row->saleDone, $row->creditCardID, $row->approvalCode, $row->saleTotalAmount, $row->saleTotalDiscount, $row->saleTotalBalance, $row->creditCardAuthorizer, $row->CRE_DTE, $row->CRE_USR, $row->UPD_DTE, $row->UPD_USR, $row->DEL_DTE, $row->DEL_USR);
+	    }
+		
+		
+		// Saledetail
+		$saledetail = new Saledetail;
+		/*
+		$saledetail->saleIndex = $row->saleIndex;
+		$saledetail->saleNo = $row->saleNo;
+		$saledetail->saleType = $row->saleType;
+		$saledetail->customerIndex = $row->customerIndex;
+		$saledetail->saleDone = $row->saleDone;
+		$saledetail->creditCardID = $row->creditCardID;
+		$saledetail->approvalCode = $row->approvalCode;
+		$saledetail->saleTotalAmount = $row->saleTotalAmount;
+		$saledetail->saleTotalDiscount = $row->saleTotalDiscount;
+		$saledetail->saleTotalBalance = $row->saleTotalBalance;
+		$saledetail->creditCardAuthorizer = $row->creditCardAuthorizer;
+		$saledetail->CRE_DTE = $row->CRE_DTE;
+		$saledetail->CRE_USR = $row->CRE_USR;
+		$saledetail->UPD_DTE = $row->UPD_DTE;
+		$saledetail->UPD_USR = $row->UPD_USR;
+		$saledetail->DEL_DTE = $row->DEL_USR;
+		$saledetail->DEL_USR = $row->DEL_DTE;
+		*/
+		
+		//
+		$saledetail = $rows_sd;
+		
+		mysqli_stmt_free_result($stmt);
+		
+		mysqli_stmt_close($stmt);
+		
+		// GET SALE LIST ====================================================
+		
+	    $stmt = mysqli_prepare($this->connection,
+		"SELECT  `c`.`listIndex` AS  `listIndex` ,  `c`.`saleNo` AS  `saleNo` ,  `c`.`itemIndex` AS  `itemIndex` ,  `j`.`itemID` AS  `itemID` ,  `j`.`itembarcodeID` AS  `itembarcodeID` ,  `j`.`itemName` AS  `itemName` ,  `c`.`salePrice` AS  `salePrice` ,  `c`.`saleQTY` AS  `saleQTY` ,  `c`.`stockQTY` AS  `stockQTY` ,  `c`.`saleDiscount` AS  `saleDiscount` ,  `c`.`saleClass` AS  `saleClass` ,  `c`.`CRE_USR` AS  `CRE_USR` ,  `c`.`CRE_DTE` AS `CRE_DTE` FROM (`salelist`  `c` JOIN  `_item`  `j`) WHERE (`c`.`itemIndex` =  `j`.`itemIndex`) AND (`c`.`saleNo` = '{$saleNo}')");
+		$this->throwExceptionOnError();
+
+		mysqli_stmt_execute($stmt);
+		$this->throwExceptionOnError();
+
+		$salelists = array();
+
+		mysqli_stmt_bind_result($stmt,
+			$row_sl->listIndex,
+			$row_sl->saleNo,
+			$row_sl->itemIndex,
+			$row_sl->itemID,
+			$row_sl->itembarcodeID,
+			$row_sl->itemName,
+			$row_sl->salePrice, 
+			$row_sl->saleQTY,
+			$row_sl->stockQTY,
+			$row_sl->saleDiscount,
+			$row_sl->saleClass,
+			$row_sl->CRE_USR,
+			$row_sl->CRE_DTE);
+
+	    while (mysqli_stmt_fetch($stmt)) {
+		  $row_sl->CRE_DTE = new DateTime($row_sl->CRE_DTE);
+		  //echo("row_sl->listIndex  : ".$row_sl->listIndex."\r\n");
+				
+			// GET SALE LIST OPT ==================================================== START #1 ==========
+			$primary_listindex = $row_sl->listIndex;
+			$stmt2 = mysqli_prepare($this->connection2, "SELECT  `c`.`listIndex` AS  `listIndex` ,  `c`.`primary_listindex` AS  `primary_listindex` ,  `c`.`saleNo` AS  `saleNo` ,  `c`.`itemIndex` AS  `itemIndex` ,  `j`.`itemID` AS  `itemID` ,  `j`.`itembarcodeID` AS  `itembarcodeID` ,  `j`.`itemName` AS  `itemName` ,  `c`.`salePrice` AS  `salePrice` ,  `c`.`saleQTY` AS  `saleQTY` ,  `c`.`stockQTY` AS  `stockQTY` ,  `c`.`saleDiscount` AS  `saleDiscount` ,  `c`.`saleClass` AS  `saleClass` ,  `c`.`localDataIndex` AS  `localDataIndex` ,  `c`.`name` AS  `name` ,  `c`.`description` AS  `desc` ,  `c`.`CRE_USR` AS  `CRE_USR` ,  `c`.`CRE_DTE` AS `CRE_DTE` FROM (`salelist_opt`  `c` JOIN  `_item`  `j`) WHERE (`c`.`itemIndex` =  `j`.`itemIndex`) AND (`c`.`saleNo` = '{$saleNo}') AND (`c`.`primary_listindex` = '{$primary_listindex}')");
+			//echo("SELECT  `c`.`listIndex` AS  `listIndex` ,  `c`.`primary_listindex` AS  `primary_listindex` ,  `c`.`saleNo` AS  `saleNo` ,  `c`.`itemIndex` AS  `itemIndex` ,  `j`.`itemID` AS  `itemID` ,  `j`.`itembarcodeID` AS  `itembarcodeID` ,  `j`.`itemName` AS  `itemName` ,  `c`.`salePrice` AS  `salePrice` ,  `c`.`saleQTY` AS  `saleQTY` ,  `c`.`stockQTY` AS  `stockQTY` ,  `c`.`saleDiscount` AS  `saleDiscount` ,  `c`.`saleClass` AS  `saleClass` ,  `c`.`localDataIndex` AS  `localDataIndex` ,  `c`.`name` AS  `name` ,  `c`.`description` AS  `desc` ,  `c`.`CRE_USR` AS  `CRE_USR` ,  `c`.`CRE_DTE` AS `CRE_DTE` FROM (`salelist_opt`  `c` JOIN  `_item`  `j`) WHERE (`c`.`itemIndex` =  `j`.`itemIndex`) AND (`c`.`saleNo` = '{$saleNo}') AND (`c`.`primary_listindex` = '{$primary_listindex}')");
+			//echo("\r\n");
+			$this->throwExceptionOnError();
+
+			mysqli_stmt_execute($stmt2);
+			$this->throwExceptionOnError();
+
+			$salelist_opt = array();
+
+			mysqli_stmt_bind_result($stmt2,
+				$row2->listIndex,
+				$row2->primary_listindex,
+				$row2->saleNo,
+				$row2->itemIndex,
+				$row2->itemID,
+				$row2->itembarcodeID,
+				$row2->itemName,
+				$row2->salePrice, 
+				$row2->saleQTY,
+				$row2->stockQTY,
+				$row2->saleDiscount,
+				$row2->saleClass,
+				$row2->localDataIndex,
+				$row2->name,
+				$row2->desc,
+				$row2->CRE_USR,
+				$row2->CRE_DTE);
+
+			while (mysqli_stmt_fetch($stmt2)) {
+			  $row2->CRE_DTE = new DateTime($row2->CRE_DTE);
+			  $salelist_opt[] = $row2;
+			  $row2 = new stdClass();
+			  mysqli_stmt_bind_result($stmt2,
+				$row2->listIndex,
+				$row2->primary_listindex,
+				$row2->saleNo,
+				$row2->itemIndex,
+				$row2->itemID,
+				$row2->itembarcodeID,
+				$row2->itemName,
+				$row2->salePrice, 
+				$row2->saleQTY,
+				$row2->stockQTY,
+				$row2->saleDiscount,
+				$row2->saleClass,
+				$row2->localDataIndex,
+				$row2->name,
+				$row2->desc,
+				$row2->CRE_USR,
+				$row2->CRE_DTE);
+			
+			}
+			mysqli_stmt_free_result($stmt2);
+			
+			mysqli_stmt_close($stmt2);
+			// GET SALE LIST OPT ==================================================== END #1 ==========
+		  $row_sl->itemOPT = $salelist_opt;
+	      $salelists[] = $row_sl;
+	      $row_sl = new stdClass();
+	      mysqli_stmt_bind_result($stmt,
+			$row_sl->listIndex,
+			$row_sl->saleNo,
+			$row_sl->itemIndex,
+			$row_sl->itemID,
+			$row_sl->itembarcodeID,
+			$row_sl->itemName,
+			$row_sl->salePrice, 
+			$row_sl->saleQTY,
+			$row_sl->stockQTY,
+			$row_sl->saleDiscount,
+			$row_sl->saleClass,
+			$row_sl->CRE_USR,
+			$row_sl->CRE_DTE);
+			
+	    }
+		
+		mysqli_stmt_free_result($stmt);
+		
+		mysqli_stmt_close($stmt);
+				
+		// CLOSE CONNECTION
+		mysqli_close($this->connection);
+		mysqli_close($this->connection2);
+		
+		// Re Arr Data
+	
+		//$rows_data = new SaleDetailList;
+		$rows_data = new stdClass();
+		
+		$rows_data->saleDetail = $saledetail;
+		$rows_data->saleList = $salelists;
+	
+	    return $rows_data;
+	}
+	
+}
+
+class SaleDetailList {
+	var $saledetail;
+	var $salelist;
+}
+
+class Salelist_st {
+	var $listIndex;
+	var $saleNo;
+	var $itemIndex;
+	var $itemID;
+	var $itembarcodeID;
+	var $itemName;
+	var $salePrice; 
+	var $saleQTY;
+	var $stockQTY;
+	var $saleDiscount;
+	var $saleClass;
+	var $itemOPT;
+	var $CRE_USR;
+	var $CRE_DTE;
 }
 
 class Saledetail {
