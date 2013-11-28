@@ -454,23 +454,19 @@ class SaledetailviewService {
 		return $rows;
 	}
 
-	public function getBalanceMovement($fromDate, $endDate) {
-		$stmt = mysqli_prepare($this->connection,
-						"SELECT
-							`j`.`actionIndex` as `actionIndex`,
-							`j`.`drawerIndex` as `drawerIndex`,
-							`j`.`actionType` as `actionType`,
-							`j`.`actionAmount` as `actionAmount`,
-							`j`.`drawerBalance` as `drawerBalance`,
-							`j`.`CRE_DTE` as `CRE_DTE`,
-							`j`.`CRE_USR` as `CRE_USR`,
-							`s`.`userIndex` as `userIndex`,
-							`s`.`fullname` as `fullname`,
-							`s`.`myusername` as `myusername`
-							FROM (_till_monitor `j` JOIN _myuser `s`)
-							WHERE (CONVERT_TZ(`j`.`CRE_DTE`, '+00:00', '+07:00') BETWEEN ? AND ?) 
-							AND (`j`.`CRE_USR` = `s`.`userID`)
-							AND (`s`.`DEL_USR` IS NULL)");
+	public function getBalanceMovement($fromDate, $endDate, $index = -1, $length = 0) 
+	{
+		$sql = "SELECT `j`.`actionIndex` as `actionIndex`, `j`.`drawerIndex` as `drawerIndex`, `j`.`actionType` as `actionType`, `j`.`actionAmount` as `actionAmount`, `j`.`drawerBalance` as `drawerBalance`, `j`.`CRE_DTE` as `CRE_DTE`, `j`.`CRE_USR` as `CRE_USR`, `s`.`userIndex` as `userIndex`, `s`.`fullname` as `fullname`, `s`.`myusername` as `myusername` FROM (_till_monitor `j` JOIN _myuser `s`) ";
+
+		$where = "WHERE (CONVERT_TZ(`j`.`CRE_DTE`, '+00:00', '+07:00') BETWEEN ? AND ?) AND (`j`.`CRE_USR` = `s`.`userID`) AND (`s`.`DEL_USR` IS NULL) ";
+
+		if ($index != -1) {
+			$where .= " LIMIT {$index}, {$length} ";
+		}
+
+		$sql .= $where;
+
+		$stmt = mysqli_prepare($this->connection, $sql);
 		$this->throwExceptionOnError();
 
 		mysqli_stmt_bind_param($stmt, 'ss',
@@ -494,6 +490,19 @@ class SaledetailviewService {
 		mysqli_close($this->connection);
 
 		return $rows;
+	}
+
+	public function getBalanceMovement_Count($fromDate, $endDate) {
+/***	$balance_rows = array();  **/
+		$balance_rows = $this->getBalanceMovement($fromDate, $endDate);
+
+		return count($balance_rows);
+	}
+
+	public function getBalanceMovement_Area($fromDate, $endDate, $index, $length) {
+		$balance_rows = $this->getBalanceMovement($fromDate, $endDate, $index, $length);
+
+		return $balance_rows;
 	}
 
 	public function getSearch_ItemCosts($searchCause) {
@@ -578,18 +587,35 @@ class SaledetailviewService {
    Ref:
        http://webcheatsheet.com/php/debug_php_with_xdebug.php
 **/
-// echo("<p>Begin Test</p>");
+/**
+echo("<p>Begin Test</p>");
 
-// $obj = new SaledetailviewService;
-// $from = new DateTime();  // Today
-// $to = new DateTime();  // Today
+/**
+ $obj = new SaledetailviewService;
+ $from = new DateTime();  // Today
+ $to = new DateTime();  // Today
 
-// $rowZa = array();
-//$rowZa = $obj->getBalanceMovement($from->date, $to->date);
+ $rowZa = array();
+$rowZa = $obj->getBalanceMovement($from->date, $to->date);
 // $rowZa = $obj->getBalanceMovement('2012-01-01 00:00:00', $to->date);
-// echo("<p>pre Ending</p>");
+ echo("<p>pre Ending</p>");
 
-// echo("<p>End!!</p>");
+ 
+$index = 50;
+$length = 100;
+ 
+$sql = "SELECT `j`.`actionIndex` as `actionIndex`, `j`.`drawerIndex` as `drawerIndex`, `j`.`actionType` as `actionType`, `j`.`actionAmount` as `actionAmount`, `j`.`drawerBalance` as `drawerBalance`, `j`.`CRE_DTE` as `CRE_DTE`, `j`.`CRE_USR` as `CRE_USR`, `s`.`userIndex` as `userIndex`, `s`.`fullname` as `fullname`, `s`.`myusername` as `myusername` FROM (_till_monitor `j` JOIN _myuser `s`) ";
+
+$where = "WHERE (CONVERT_TZ(`j`.`CRE_DTE`, '+00:00', '+07:00') BETWEEN '2012-01-01 00:00:00' AND '2014-01-01 00:00:00') AND (`j`.`CRE_USR` = `s`.`userID`) AND (`s`.`DEL_USR` IS NULL) ";
+
+if ($index != -1) {
+	$where .= " LIMIT {$index}, {$length} ";
+}
+
+$sql .= $where;
+echo $sql;
+
+echo("<p>End!!</p>");
 /*************/
 
 ?>
