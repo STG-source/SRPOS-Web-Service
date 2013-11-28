@@ -458,9 +458,9 @@ class SaledetailviewService {
 	{
 		$sql = "SELECT `j`.`actionIndex` as `actionIndex`, `j`.`drawerIndex` as `drawerIndex`, `j`.`actionType` as `actionType`, `j`.`actionAmount` as `actionAmount`, `j`.`drawerBalance` as `drawerBalance`, `j`.`CRE_DTE` as `CRE_DTE`, `j`.`CRE_USR` as `CRE_USR`, `s`.`userIndex` as `userIndex`, `s`.`fullname` as `fullname`, `s`.`myusername` as `myusername` FROM (_till_monitor `j` JOIN _myuser `s`) ";
 
-		$where = "WHERE (CONVERT_TZ(`j`.`CRE_DTE`, '+00:00', '+07:00') BETWEEN ? AND ?) AND (`j`.`CRE_USR` = `s`.`userID`) AND (`s`.`DEL_USR` IS NULL) ";
+		$where = "WHERE (CONVERT_TZ(`j`.`CRE_DTE`, '+00:00', '+07:00') BETWEEN ? AND ?) AND (`j`.`CRE_USR` = `s`.`userID`) ";
 
-		if ($index != -1) {
+		if ($index > -1) {
 			$where .= " LIMIT {$index}, {$length} ";
 		}
 
