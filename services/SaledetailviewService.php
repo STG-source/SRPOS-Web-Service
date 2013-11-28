@@ -554,7 +554,15 @@ class SaledetailviewService {
 		return $rows;
 	}
 
-	public function getSearch_saledetailByBill($searchCause) {
+	public function getSearch_saledetailByBill($searchCause, $index = -1, $length = 0)
+	{
+		$limit = "";
+
+		if ($index > -1) {
+			$limit .= " LIMIT {$index}, {$length} ";
+		}
+
+		$searchCause .= $limit;
 
 	    $stmt = mysqli_prepare($this->connection, $searchCause);
 		$this->throwExceptionOnError();
@@ -577,6 +585,17 @@ class SaledetailviewService {
 
 		return $rows;
 	}
+
+	public function getSearch_saledetailByBill_Count($searchCause) {
+		$bill_list = $this->getSearch_saledetailByBill($searchCause);
+		return count($bill_list);
+	}
+
+	public function getSearch_saledetailByBill_Area($searchCause, $index, $length) {
+		$bill_list = $this->getSearch_saledetailByBill($searchCause, $index, $length);
+		return $bill_list;
+	}
+
 }
 
 
