@@ -430,7 +430,7 @@ class SaledetailviewService {
 		return $rows;
 	}
 
-	public function getSearch_soldItem($searchCause) {
+	public function getSearch_soldItem($searchCause, $index = -1, $length = 0) {
 		 
 	    $stmt = mysqli_prepare($this->connection, $searchCause);
 		$this->throwExceptionOnError();
@@ -452,6 +452,18 @@ class SaledetailviewService {
 		mysqli_close($this->connection);
 		
 		return $rows;
+	}
+
+	public function getSearch_soldItem_Count($searchCause)
+	{
+		$soldItem = $this->getSearch_soldItem($searchCause);
+		return count($soldItem);
+	}
+
+	public function getSearch_soldItem_Area($searchCause, $index, $length)
+	{
+		$soldItem = $this->getSearch_soldItem($searchCause, $index, $length);
+		return count($soldItem);
 	}
 
 	public function getBalanceMovement($fromDate, $endDate, $index = -1, $length = 0) 
