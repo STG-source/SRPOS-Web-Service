@@ -562,13 +562,13 @@ class SaledetailviewService {
 		return $rows;
 	}
 
-	public function getSearch_ItemProfit_count($searchCause)
+	public function getSearch_ItemProfit_Count($searchCause)
 	{
 		$itemProfit_list = $this->getSearch_ItemProfit($searchCause);
 		return count($itemProfit_list);
 	}
 
-	public function getSearch_ItemProfit_count($searchCause, $index, $length)
+	public function getSearch_ItemProfit_Area($searchCause, $index, $length)
 	{
 		$itemProfit_list = $this->getSearch_ItemProfit($searchCause, $index, $length);
 		return $itemProfit_list;
