@@ -308,8 +308,15 @@ class SaledetailviewService {
 	 * 
 	 * @return stdClass
 	 */
-	public function getSearch_saledetailviewByDay($searchCause) {
-		 
+	public function getSearch_saledetailviewByDay($searchCause, $index = -1, $length = 0)
+	{
+		$limit = "";
+
+		if ($index > -1) {
+			$limit .= " LIMIT {$index}, {$length} ";
+		}
+
+		$searchCause .= $limit;
 	    $stmt = mysqli_prepare($this->connection, $searchCause);
 		$this->throwExceptionOnError();
 				
@@ -332,7 +339,19 @@ class SaledetailviewService {
 		
 		return $rows;
 	}
-	
+
+	public function getSearch_saledetailviewByDay_Count($searchCause)
+	{
+		$saleByDay = $this->getSearch_saledetailviewByDay($searchCause);
+		return count($saleByDay);
+	}
+
+	public function getSearch_saledetailviewByDay_Area($searchCause, $index, $length)
+	{
+		$saleByDay = $this->getSearch_saledetailviewByDay($searchCause, $index, $length);
+		return $saleByDay;
+	}
+
 	/**
 	 * Returns saledetailview by XXX matched the search criteria (KP)
 	 *
@@ -341,8 +360,15 @@ class SaledetailviewService {
 	 * 
 	 * @return stdClass
 	 */
-	public function getSearch_saledetailviewByXXX($searchCause) {
-		 
+	public function getSearch_saledetailviewByXXX($searchCause, $index = -1, $length = 0)
+	{
+		$limit = "";
+
+		if ($index > -1) {
+			$limit .= " LIMIT {$index}, {$length} ";
+		}
+
+		$searchCause .= $limit;
 	    $stmt = mysqli_prepare($this->connection, $searchCause);
 		$this->throwExceptionOnError();
 				
@@ -363,6 +389,18 @@ class SaledetailviewService {
 		mysqli_close($this->connection);
 		
 		return $rows;
+	}
+
+	public function getSearch_saledetailviewByXXX_Count($searchCause)
+	{
+		$saleDetailByXXX = $this->getSearch_saledetailviewByXXX($searchCause);
+		return count($saleDetailByXXX);
+	}
+
+	public function getSearch_saledetailviewByXXX_Area($searchCause, $index, $length)
+	{
+		$saleDetailByXXX = $this->getSearch_saledetailviewByXXX($searchCause, $index, $length);
+		return $saleDetailByXXX;
 	}
 
 	/**
