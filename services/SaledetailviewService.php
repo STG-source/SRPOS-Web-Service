@@ -529,7 +529,15 @@ class SaledetailviewService {
 		return $rows;
 	}
 
-	public function getSearch_ItemProfit($searchCause) {
+	public function getSearch_ItemProfit($searchCause, $index = -1, $length = 0)
+	{
+		$limit = "";
+
+		if ($index > -1) {
+			$limit .= " LIMIT {$index}, {$length} ";
+		}
+
+		$searchCause .= $limit;
 
 	    $stmt = mysqli_prepare($this->connection, $searchCause);
 		$this->throwExceptionOnError();
@@ -552,6 +560,18 @@ class SaledetailviewService {
 		mysqli_close($this->connection);
 
 		return $rows;
+	}
+
+	public function getSearch_ItemProfit_count($searchCause)
+	{
+		$itemProfit_list = $this->getSearch_ItemProfit($searchCause);
+		return count($itemProfit_list);
+	}
+
+	public function getSearch_ItemProfit_count($searchCause, $index, $length)
+	{
+		$itemProfit_list = $this->getSearch_ItemProfit($searchCause, $index, $length);
+		return $itemProfit_list;
 	}
 
 	public function getSearch_saledetailByBill($searchCause, $index = -1, $length = 0)
