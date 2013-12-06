@@ -18,6 +18,9 @@
  *  information at http://www.adobe.com/go/flex_security
  *
  */
+
+include 'ScustomerService.php';
+
 class SaledetailService {
 
 	var $username = "root";
@@ -983,7 +986,6 @@ class SaledetailService {
 			array_push($autoidlist,$item_autoid);
 
 			mysqli_stmt_free_result($stmt);
-
 			mysqli_stmt_close($stmt);
 
 			//***** Update Item
@@ -996,8 +998,7 @@ class SaledetailService {
 			mysqli_stmt_execute($stmt);
 			$this->throwExceptionOnError();
 
-			mysqli_stmt_free_result($stmt);	
-
+			mysqli_stmt_free_result($stmt);
 			mysqli_stmt_close($stmt);
 
 			//*****
@@ -1028,7 +1029,6 @@ class SaledetailService {
 		$autoid_saledetail = mysqli_stmt_insert_id($stmt);
 
 		mysqli_stmt_free_result($stmt);
-
 		mysqli_stmt_close($stmt);
 
 		//***** Retrieve last rows from Till Monitor
@@ -1060,9 +1060,8 @@ class SaledetailService {
 		$autoid_monitor = mysqli_stmt_insert_id($stmt);
 
 		mysqli_stmt_free_result($stmt);	
-		
 		mysqli_close($this->connection);
-		
+
 		//$return_result = array("autoidlist"=>$autoidlist,"autoid_monitor"=>$autoid_monitor,"autoid_saledetail"=>$autoid_saledetail);
 		//$return_result = (object)array("autoidlist"=>$autoidlist,"autoid_monitor"=>$autoid_monitor,"autoid_saledetail"=>$autoid_saledetail);
 
@@ -1072,9 +1071,16 @@ class SaledetailService {
 			autoid_monitor: $autoid_monitor,
 			autoid_saledetail: $autoid_saledetail
 		};
-		
+
 		//return $return_result;
-*/	
+*/
+
+		/** Customer Registration **/
+		 /** [TBC] Default Point Score Calculation **/
+		$pointScore = $saledetail->saleTotalBalance/100;
+		$customer_obj = new ScustomerService;
+		$customer_obj->setCustomerPoint($saledetail->customerIndex, $pointScore);
+
 		return $autoid_saledetail;
 	}
 

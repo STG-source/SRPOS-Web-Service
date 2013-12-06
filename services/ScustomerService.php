@@ -191,7 +191,7 @@ class ScustomerService {
 	 * @return stdClass
 	 */
 	public function get_customerByID($itemID) {
-		
+
 		$stmt = mysqli_prepare($this->connection, "SELECT * FROM $this->tablename where customerIndex=?");
 		$this->throwExceptionOnError();
 		
@@ -277,7 +277,7 @@ class ScustomerService {
 		$stmt = mysqli_prepare($this->connection, "UPDATE $this->tablename SET customerID=?, fullname=?, address=?, province=?, postcode=?, phone=?, email=?, customerClass=?, customerType=?, customerAVP=?, customerPoint=?, CRE_DTE=?, CRE_USR=?, UPD_DTE=?, UPD_USR=?, DEL_DTE=?, DEL_USR=? WHERE customerIndex=?");		
 		$this->throwExceptionOnError();
 		
-		mysqli_stmt_bind_param($stmt, 'sssssssssddssssssi', $item->customerID, $item->fullname, $item->address, $item->province, $item->postcode, $item->phone, $item->email, $item->customerClass, $item->customerType, $item->customerAVP, $item->customerPoint, $item->CRE_DTE->toString('YYYY-MM-dd HH:mm:ss'), $item->CRE_USR, $item->UPD_DTE->toString('YYYY-MM-dd HH:mm:ss'), $item->UPD_USR, $item->DEL_DTE->toString('YYYY-MM-dd HH:mm:ss'), $item->DEL_USR, $item->customerIndex);		
+		mysqli_stmt_bind_param($stmt, 'sssssssssddssssssi', $item->customerID, $item->fullname, $item->address, $item->province, $item->postcode, $item->phone, $item->email, $item->customerClass, $item->customerType, $item->customerAVP, $item->customerPoint, $item->CRE_DTE->toString('YYYY-MM-dd HH:mm:ss'), $item->CRE_USR, $item->UPD_DTE->toString('YYYY-MM-dd HH:mm:ss'), $item->UPD_USR, $item->DEL_DTE->toString('YYYY-MM-dd HH:mm:ss'), $item->DEL_USR, $item->customerIndex);
 		$this->throwExceptionOnError();
 
 		mysqli_stmt_execute($stmt);		
@@ -410,9 +410,33 @@ class ScustomerService {
 		if(mysqli_error($link)) {
 			$msg = mysqli_errno($link) . ": " . mysqli_error($link);
 			throw new Exception('MySQL Error - '. $msg);
-		}		
+		}
 	}
-	
+
+
+	public function setCustomerPoint($customerIndex, $pointScore) {
+		$customerRow = $this->get_customerByID($customerIndex);
+		$customerRow->customerPoint += $pointScore;
+
+		// $this->update_customer($customerRow);
+		// PHP Fatal error:  Call to undefined method DateTime::toString() in ScustomerService.php on line 280
+
+		// Manually update customer point score
+		$stmt = mysqli_prepare($this->connection, "UPDATE $this->tablename SET customerPoint = ? WHERE customerIndex = ?");
+		$this->throwExceptionOnError();
+
+		mysqli_stmt_bind_param($stmt, 'ii', $customerRow->customerPoint, $customerIndex);
+		$this->throwExceptionOnError();
+
+		mysqli_stmt_execute($stmt);
+		$this->throwExceptionOnError();
+
+		mysqli_stmt_free_result($stmt);
+		mysqli_stmt_close($stmt);
+
+		return $customerRow;
+	}
+
 }
 
 ?>
