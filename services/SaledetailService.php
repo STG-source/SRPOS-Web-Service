@@ -20,12 +20,12 @@
  */
 
 //include 'ScustomerService.php';
-// Version 1.14g
+// Version 1.15e
 class SaledetailService {
 
 	var $username = "root";
 	var $password = "";
-	var $server = "127.0.0.1";
+	var $server = "127.0.0.1"; //var $server = "localhost";
 	var $port = "3306";
 	var $databasename = "stechschema";
 	var $tablename = "saledetail";
@@ -741,7 +741,7 @@ class SaledetailService {
 
 		$saleIndex = 0; // $saledetail->saleIndex
 		$saleDone = 0; // $saledetail->saleDone
-		mysqli_stmt_bind_param($stmt, 'iiissiiissssssss',
+		mysqli_stmt_bind_param($stmt, 's', 
 			$saledetail->saleType, $saledetail->customerIndex, $saleDone, 
 			$saledetail->creditCardID, $saledetail->approvalCode, 
 			$saledetail->saleTotalAmount, $saledetail->saleTotalDiscount, 
@@ -829,7 +829,7 @@ class SaledetailService {
 
 		$saleIndex = 0; // $saledetail->saleIndex
 		$saleDone = 0; // $saledetail->saleDone
-		mysqli_stmt_bind_param($stmt, 's', 
+		mysqli_stmt_bind_param($stmt, 'iiissdddssssssss', 
 			$saledetail->saleType, $saledetail->customerIndex, $saleDone, 
 			$saledetail->creditCardID, $saledetail->approvalCode, 
 			$saledetail->saleTotalAmount, $saledetail->saleTotalDiscount, 
@@ -845,8 +845,104 @@ class SaledetailService {
 
 		mysqli_stmt_free_result($stmt);
 		mysqli_stmt_close($stmt);
-		
+		// itemList Work
 		foreach($itemlist as $item){
+			switch($item->revFlag){
+				case -1: // (-1 : RF_SETVOID) ==> Update this list to VOID
+					$saleClass = 'Vo';
+					$saleQTY = 0;
+					//$itemIndex = $item->itemIndex;
+					$listIndex = $item->listIndex;
+					$stmt = mysqli_prepare($this->connection, "UPDATE $this->table_salelist SET saleClass=?,saleQTY=? WHERE listIndex = ? AND saleNo = ?"); // Update Item
+					mysqli_stmt_bind_param($stmt, 'siis', $saleClass, $saleQTY, $listIndex, $saleNo);
+					mysqli_stmt_execute($stmt);
+					mysqli_stmt_free_result($stmt);	
+					mysqli_stmt_close($stmt);
+					break;
+				case 1: // (1 : RF_NEWINSERT) ==> INSERT new row salelist/salelist_opt
+					// CreateSaleList
+					$stmt = mysqli_prepare($this->connection, "INSERT INTO $this->table_salelist (saleNo, itemIndex, salePrice, saleQTY, stockQTY, saleDiscount, saleClass, CRE_USR, CRE_DTE, UPD_USR, UPD_DTE, DEL_USR, DEL_DTE) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)");
+					$this->throwExceptionOnError();
+					$stockQTY = $item->stockQTY; //stockQTY ?
+					mysqli_stmt_bind_param($stmt, 'siddddsssssss', 
+						$item->saleNo, $item->itemIndex, 
+						$item->salePrice, $item->saleQTY, $stockQTY, $item->saleDiscount, $item->saleClass, 
+						$saledetail->CRE_USR, $saledetail->CRE_DTE->toString('YYYY-MM-dd HH:mm:ss'), 
+						$saledetail->UPD_USR, $saledetail->UPD_DTE->toString('YYYY-MM-dd HH:mm:ss'), 
+						$saledetail->DEL_USR, $saledetail->DEL_DTE->toString('YYYY-MM-dd HH:mm:ss'));
+					$this->throwExceptionOnError();	
+					mysqli_stmt_execute($stmt);
+					$this->throwExceptionOnError();	
+					$item_autoid = mysqli_stmt_insert_id($stmt);
+					mysqli_stmt_free_result($stmt);	
+					mysqli_stmt_close($stmt);
+					if(sizeof($item->itemOPT)){
+						foreach($item->itemOPT as $itemOpt)
+						{
+							$stockQTY = $itemOpt->stockQTY; //stockQTY ?
+							// CreateSaleList OPT
+							$stmt = mysqli_prepare($this->connection, "INSERT INTO $this->table_salelist_opt (saleNo, primary_listindex, itemIndex, salePrice, saleQTY, stockQTY, saleDiscount, saleClass, localDataIndex, name, description, CRE_USR, CRE_DTE, UPD_USR, UPD_DTE, DEL_USR, DEL_DTE) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)");
+							mysqli_stmt_bind_param($stmt, 'siiddddsissssssss', $saleNo, $item_autoid, $itemOpt->itemIndex, $itemOpt->salePrice, $itemOpt->saleQTY, $stockQTY, $itemOpt->saleDiscount, $itemOpt->saleClass, $itemOpt->localDataIndex, $itemOpt->name, $itemOpt->desc, $saledetail->CRE_USR, $saledetail->CRE_DTE->toString('YYYY-MM-dd HH:mm:ss'), $saledetail->UPD_USR, $saledetail->UPD_DTE->toString('YYYY-MM-dd HH:mm:ss'), $saledetail->DEL_USR, $saledetail->DEL_DTE->toString('YYYY-MM-dd HH:mm:ss'));
+							$this->throwExceptionOnError();
+							mysqli_stmt_execute($stmt);
+							$this->throwExceptionOnError();	
+							mysqli_stmt_free_result($stmt);	
+							mysqli_stmt_close($stmt);
+						}
+					}
+					break;
+				case 2: // (2 : RF_UPDATE) ==> Update rows of salelist/salelist_opt
+					$stmt = mysqli_prepare($this->connection, "UPDATE $this->table_salelist SET salePrice=?, saleQTY=?, stockQTY=?, saleDiscount=?, saleClass=?, CRE_DTE=?, CRE_USR=?, UPD_DTE=?, UPD_USR=?, DEL_DTE=?, DEL_USR=? WHERE saleNo=? AND listIndex=?");
+					mysqli_stmt_bind_param($stmt, 'ddddssssssssi', 
+						$item->salePrice, $item->saleQTY, $item->stockQTY, $item->saleDiscount, $item->saleClass, 
+						$item->CRE_DTE->toString('YYYY-MM-dd HH:mm:ss'),$item->CRE_USR, 
+						$item->UPD_DTE->toString('YYYY-MM-dd HH:mm:ss'),$item->UPD_USR, 
+						$item->DEL_DTE->toString('YYYY-MM-dd HH:mm:ss'),$item->DEL_USR, 
+						$saleNo, $item->listIndex);
+					$this->throwExceptionOnError();
+					mysqli_stmt_execute($stmt);
+					$this->throwExceptionOnError();
+					mysqli_stmt_free_result($stmt);	
+					mysqli_stmt_close($stmt);
+					if(sizeof($item->itemOPT)){
+						foreach($item->itemOPT as $itemOpt)
+						{
+							$stmt = mysqli_prepare($this->connection, "UPDATE $this->table_salelist_opt 
+								SET salePrice=?, saleQTY=?, stockQTY=?, saleDiscount=?, 
+								saleClass=?, 
+								localDataIndex=?, 
+								name=?, description=?, 
+								CRE_DTE=?, CRE_USR=?, 
+								UPD_DTE=?, UPD_USR=?, 
+								DEL_DTE=?, DEL_USR=? 
+								WHERE saleNo=? AND primary_listindex=? AND itemIndex=?");
+							mysqli_stmt_bind_param($stmt, 'ddddsisssssssssii', 
+								$itemOpt->salePrice, $itemOpt->saleQTY, $itemOpt->stockQTY, $itemOpt->saleDiscount, 
+								$itemOpt->saleClass, 
+								$itemOpt->localDataIndex, 
+								$itemOpt->name, $itemOpt->desc, 
+								$itemOpt->CRE_DTE->toString('YYYY-MM-dd HH:mm:ss'),$itemOpt->CRE_USR, 
+								$itemOpt->UPD_DTE->toString('YYYY-MM-dd HH:mm:ss'),$itemOpt->UPD_USR, 
+								$itemOpt->DEL_DTE->toString('YYYY-MM-dd HH:mm:ss'),$itemOpt->DEL_USR, 
+								$saleNo, $itemOpt->primary_listIndex, $itemOpt->itemIndex);
+							$this->throwExceptionOnError();
+							mysqli_stmt_execute($stmt);
+							$this->throwExceptionOnError();
+							mysqli_stmt_free_result($stmt);	
+							mysqli_stmt_close($stmt);
+						}
+					}
+					break;
+				default:
+				case 0: // (0 : RF_NOCHANGE) ==> No Action
+					break;
+
+
+			}
+
+			/*
+			// Some Problem
+
 			$stmt = mysqli_prepare($this->connection, "UPDATE $this->table_salelist SET salePrice=?, saleQTY=?, stockQTY=?, saleDiscount=?, saleClass=?, CRE_DTE=?, CRE_USR=?, UPD_DTE=?, UPD_USR=?, DEL_DTE=?, DEL_USR=? WHERE saleNo=? AND itemIndex=?");
 			mysqli_stmt_bind_param($stmt, 'ddddssssssssi', 
 				$item->salePrice, $item->saleQTY, $item->stockQty, $item->saleDiscount, $item->saleClass, 
@@ -913,6 +1009,8 @@ class SaledetailService {
 					}
 				} // END LOOP ITEM OPT ======================================================
 			}
+
+			*/
 		}
 		
 		//return 1;
@@ -968,7 +1066,9 @@ class SaledetailService {
 		// void SaleList
 		foreach($voidItemList as $item){
 			$itemIndex = $item->itemIndex;
-			$stmt = mysqli_prepare($this->connection, "UPDATE $this->table_item SET saleClass=? WHERE itemIndex = ? AND saleNo = ?"); // Update Item
+			//$stmt = mysqli_prepare($this->connection, "UPDATE $this->table_item SET saleClass=? WHERE itemIndex = ? AND saleNo = ?"); // Update Item
+			$stmt = mysqli_prepare($this->connection, "UPDATE $this->table_salelist SET saleClass=? WHERE itemIndex = ? AND saleNo = ?"); // Update Item // Fixbug 1.15
+
 			mysqli_stmt_bind_param($stmt, 'sis', $saleClass, $itemIndex, $saleNo);
 			mysqli_stmt_execute($stmt);
 			mysqli_stmt_free_result($stmt);	
@@ -1354,7 +1454,6 @@ class SaledetailService {
 		$row = new stdClass();
 		mysqli_stmt_bind_result($stmt, $row->saleIndex, $row->saleNo, $row->saleType, $row->customerIndex, $row->saleDone, $row->creditCardID, $row->approvalCode, $row->saleTotalAmount, $row->saleTotalDiscount, $row->saleTotalBalance, $row->creditCardAuthorizer, $row->CRE_DTE, $row->CRE_USR, $row->UPD_DTE, $row->UPD_USR, $row->DEL_DTE, $row->DEL_USR);
 		
-		$saledetail = $row;
 	    if(mysqli_stmt_fetch($stmt)){
 			$row->CRE_DTE = new DateTime($row->CRE_DTE);
 			$row->UPD_DTE = new DateTime($row->UPD_DTE);
@@ -1387,7 +1486,7 @@ class SaledetailService {
 				`j`.`itemDetail` AS `itemDetail` ,
 				`c`.`salePrice` AS `itemPrice` ,
 				`c`.`saleQTY` AS `itemQTY` 
-				FROM `salelist` `c` LEFT JOIN (SELECT * FROM `_item`)  `j` ON (`c`.`itemIndex` =  `j`.`itemIndex`) WHERE `c`.`saleNo` = '{$saleNo}' AND `c`.`saleclass` <> 'Vo'";
+				FROM `salelist` `c` LEFT JOIN (SELECT * FROM `_item`)  `j` ON (`c`.`itemIndex` =  `j`.`itemIndex`) WHERE `c`.`saleNo` = '{$saleNo}'";
 		//remark* No Calculation set query
 		$stmt = mysqli_prepare($this->connection,$sql);
 		$this->throwExceptionOnError();
@@ -1509,7 +1608,9 @@ class SaledetailService {
 					$row->UPD_DTE = new DateTime($row->UPD_DTE);
 				if(!is_null($row->DEL_DTE))
 					$row->DEL_DTE = new DateTime($row->DEL_DTE);
-				$optionPrice += $row->itemPrice;
+				if($itemlist[$i]->saleClass != 'Vo'){
+					$optionPrice += $row->itemPrice;
+				}
 				$itemlist[$i]->itemOPT[] = $row;
 				
 				$row = new stdClass();
@@ -1532,12 +1633,14 @@ class SaledetailService {
 					$row->itemQTY, 
 					$row->itemPrice);
 			}
-
-			$itemPrice = $itemlist[$i]->itemPrice;
-			$itemQTY = $itemlist[$i]->itemQTY;
-			
-			$itemlist[$i]->optionPrice = $optionPrice;
-			$itemlist[$i]->SalePrice = ($itemPrice + $optionPrice)*$itemQTY;
+			$itemlist[$i]->optionPrice = 0;
+			$itemlist[$i]->SalePrice = 0;
+			if($itemlist[$i]->saleClass != 'Vo'){
+				$itemPrice = $itemlist[$i]->itemPrice;
+				$itemQTY = $itemlist[$i]->itemQTY;
+				$itemlist[$i]->optionPrice = $optionPrice;
+				$itemlist[$i]->SalePrice = ($itemPrice + $optionPrice)*$itemQTY;
+			}
 		}
 		
 		$rows_data = new stdClass();
