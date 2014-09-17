@@ -9,7 +9,7 @@
 	
 	<title>Report</title>
 	<!-- Bootstrap -->
-	<link href="css/bootstrap.min.css" rel="stylesheet">
+	<link href="css/bootstrap.min.css" rel="stylesheet" type="text/css" media="screen, print">
 	
 	<!-- jQuery (necessary for Bootstrap's JavaScript plugins) -->
 	<script src="js/jquery-1.11.1.min.js"></script>
@@ -25,7 +25,7 @@
 	<script src='nprogress/nprogress.js'></script>
 	<link rel='stylesheet' href='nprogress/nprogress.css'/>
 	<!-- Last CSS -->
-	<link href="dashboard.css" rel="stylesheet">
+	<link href="dashboard.css" rel="stylesheet" type="text/css" media="screen, print">
 </head>
 <body>
 <!--
@@ -174,7 +174,7 @@
 						<li><a href="#" class="btn_hourlysales">Hourly Sales</a></li>
 					</ul>
 				<div class="row other">
-					ui v0.2 core v0.7
+					ui v0.3 core v0.7
 				</div>
 			</div>
 <script>

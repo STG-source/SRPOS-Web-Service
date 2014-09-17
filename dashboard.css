@@ -4,10 +4,10 @@
 
 /* Move down content because we have a fixed navbar that is 50px tall */
 body {
-  /*padding-top: 50px;*/
+	/*padding-top: 50px;*/
 }
 select, option {
-	color: #000;
+	color: #000 !important;
 }
 
 .center-block {
@@ -23,7 +23,7 @@ select, option {
 
 .sub-header {
   padding-bottom: 10px;
-  border-bottom: 1px solid #eee;
+  border-bottom: 1px solid #eee !important;
 }
 
 /*
@@ -127,55 +127,61 @@ select, option {
  *
  */
 .table-bordered>thead>tr>th.title.mainTime {
-	background-color:#bfbfbf;
+	background-color:#bfbfbf !important;
 	border:none;
-	border-top: 1px solid #000;
-	border-bottom: 1px solid #000;
+	border-top: 1px solid #000 !important;
+	border-bottom: 1px solid #000 !important;
+	-webkit-print-color-adjust:exact;
 }
 .table-bordered>thead>tr>th.title.hour22 , .table-bordered>thead>tr>th.title.hour7{
 	border: 1px solid #000;
 }
 .table-bordered>thead>tr>th.title.dt {
-	background-color:#ffc000;
-	border: 1px solid #000;
+	background-color:#ffc000 !important;
+	border: 1px solid #000 !important;
 }
 .table-bordered>thead>tr>th.title.total {
-	background-color:#ffc000;
-	border: 1px solid #000;
+	background-color:#ffc000 !important;
+	border: 1px solid #000 !important;
 }
 .table-bordered>tbody>tr>td.tb-week {
-	background-color:#d8e4bc;
-	border: 1px solid #000;
-	border-top: 1px solid #000;
+	background-color:#d8e4bc !important;
+	border: 1px solid #000 !important;
+	border-top: 1px solid #000 !important;
 }
 .table-bordered>tbody>tr>td.data {
-	background-color:#fff;
+	background-color:#fff !important;
 	border: none;
 }
 .table-bordered>tbody>tr>td.data.day {
-	background-color:#fff;
-	border: 1px solid #000;
+	background-color:#fff !important;
+	border: 1px solid #000 !important;
 }
 .table-bordered>tbody>tr>td.data.hour7 {
-	background-color:#fff;
-	border: 1px solid #000;
+	background-color:#fff !important;
+	border: 1px solid #000 !important;
 }
 .table-bordered>tbody>tr>td.data.hour21,.table-bordered>tbody>tr>td.data.hour22 {
-	background-color:#fff;
-	border: 1px solid #000;
+	background-color:#fff !important;
+	border: 1px solid #000 !important;
 }
-.table-bordered>tbody>tr>td.data.indicator_lv2 { background-color:#dce6f1; }
-.table-bordered>tbody>tr>td.data.indicator_lv3 { background-color:#8db4e2; }
-.table-bordered>tbody>tr>td.data.indicator_lv4 { background-color:#538dd5; }
-.table-bordered>tbody>tr>td.data.indicator_lv5 { background-color:#1f497d; color:#fff; }
-.table-bordered>tbody>tr>td.data.indicator_lv6 { background-color:#16365c; color:#fff; }
-.table-bordered>tbody>tr>td.data.indicator_lv7 { background-color:#0f243e; color:#fff; }
+.table-bordered>tbody>tr>td.data.indicator_lv2 { background-color:#dce6f1 !important; }
+.table-bordered>tbody>tr>td.data.indicator_lv3 { background-color:#8db4e2 !important; }
+.table-bordered>tbody>tr>td.data.indicator_lv4 { background-color:#538dd5 !important; }
+.table-bordered>tbody>tr>td.data.indicator_lv5 { background-color:#1f497d !important; color:#fff !important; }
+.table-bordered>tbody>tr>td.data.indicator_lv6 { background-color:#16365c !important; color:#fff !important; }
+.table-bordered>tbody>tr>td.data.indicator_lv7 { background-color:#0f243e !important; color:#fff !important; }
 .table-bordered>tbody>tr>td.data.total {
-	background-color:#fff;
-	border: 1px solid #000;
+	background-color:#fff !important;
+	border: 1px solid #000 !important;
 }
-#indicator { border:1px solid #000; }
+#indicator { border:1px solid #000 !important; }
 
 .other { font-size: 10px; }
 #whileLoading { display: none; }
 #showPeriod { display: none; }
+
+@media print {
+	.sidebar { display: none; }
+	.main { margin: 0px; width: 100%; }
+}
