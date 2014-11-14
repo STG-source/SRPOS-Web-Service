@@ -22,7 +22,7 @@ class SalelistService {
 
 	var $username = "root";
 	var $password = "";
-	var $server = "localhost";
+	var $server = "127.0.0.1"; // "localhost";
 	var $port = "3306";
 	var $databasename = "stechschema";
 	var $tablename = "salelist";
