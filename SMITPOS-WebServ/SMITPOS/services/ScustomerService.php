@@ -91,32 +91,42 @@ class ScustomerService {
 	 * @return stdClass
 	 */
 	public function getSearch_customer($searchCause) {
-		 
 	    $stmt = mysqli_prepare($this->connection, $searchCause);
 		$this->throwExceptionOnError();
-		
-		//mysqli_stmt_bind_param($stmt,  , $searchCause);
-		//$this->throwExceptionOnError();
-		
+
 		mysqli_stmt_execute($stmt);
 		$this->throwExceptionOnError();
-		
+
 		$rows = array();
-		
-		mysqli_stmt_bind_result($stmt, $row->customerIndex, $row->customerID, $row->fullname, $row->address, $row->province, $row->postcode, $row->phone, $row->email, $row->customerClass, $row->customerType, $row->customerAVP, $row->customerPoint, $row->CRE_DTE, $row->CRE_USR, $row->UPD_DTE, $row->UPD_USR, $row->DEL_DTE, $row->DEL_USR);
-		
+
+		mysqli_stmt_bind_result($stmt, $row->customerIndex, $row->customerID,
+		$row->fullname, 
+		$row->address, $row->city, $row->province, $row->postcode, 
+		$row->phone, $row->email, 
+		$row->customerClass, $row->customerType, $row->customerAVP, $row->customerPoint, 
+		$row->citizenID, $row->passportID, $row->title,
+		$row->cellPhone, $row->fax,
+		$row->CRE_DTE, $row->CRE_USR, $row->UPD_DTE, $row->UPD_USR, $row->DEL_DTE, $row->DEL_USR);
+
 	    while (mysqli_stmt_fetch($stmt)) {
 	      $row->CRE_DTE = new DateTime($row->CRE_DTE);
 	      $row->UPD_DTE = new DateTime($row->UPD_DTE);
 	      $row->DEL_DTE = new DateTime($row->DEL_DTE);
 	      $rows[] = $row;
 	      $row = new stdClass();
-	      mysqli_stmt_bind_result($stmt, $row->customerIndex, $row->customerID, $row->fullname, $row->address, $row->province, $row->postcode, $row->phone, $row->email, $row->customerClass, $row->customerType, $row->customerAVP, $row->customerPoint, $row->CRE_DTE, $row->CRE_USR, $row->UPD_DTE, $row->UPD_USR, $row->DEL_DTE, $row->DEL_USR);
+		  mysqli_stmt_bind_result($stmt, $row->customerIndex, $row->customerID,
+		  $row->fullname, 
+		  $row->address, $row->city, $row->province, $row->postcode, 
+		  $row->phone, $row->email, 
+		  $row->customerClass, $row->customerType, $row->customerAVP, $row->customerPoint, 
+		  $row->citizenID, $row->passportID, $row->title, 
+		  $row->cellPhone, $row->fax, 
+		  $row->CRE_DTE, $row->CRE_USR, $row->UPD_DTE, $row->UPD_USR, $row->DEL_DTE, $row->DEL_USR);
 	    }
-		
+
 		mysqli_stmt_free_result($stmt);		
 		mysqli_close($this->connection);
-		
+
 		return $rows;
 	}
 
@@ -201,7 +211,14 @@ class ScustomerService {
 		mysqli_stmt_execute($stmt);
 		$this->throwExceptionOnError();
 		
-		mysqli_stmt_bind_result($stmt, $row->customerIndex, $row->customerID, $row->fullname, $row->address, $row->province, $row->postcode, $row->phone, $row->email, $row->customerClass, $row->customerType, $row->customerAVP, $row->customerPoint, $row->CRE_DTE, $row->CRE_USR, $row->UPD_DTE, $row->UPD_USR, $row->DEL_DTE, $row->DEL_USR);
+		mysqli_stmt_bind_result($stmt, $row->customerIndex, $row->customerID,
+		$row->fullname, 
+		$row->address, $row->city, $row->province, $row->postcode, 
+		$row->phone, $row->email, 
+		$row->customerClass, $row->customerType, $row->customerAVP, $row->customerPoint, 
+		$row->citizenID, $row->passportID, $row->title,
+		$row->cellPhone, $row->fax,
+		$row->CRE_DTE, $row->CRE_USR, $row->UPD_DTE, $row->UPD_USR, $row->DEL_DTE, $row->DEL_USR);
 		
 		if(mysqli_stmt_fetch($stmt)) {
 	      $row->CRE_DTE = new DateTime($row->CRE_DTE);
