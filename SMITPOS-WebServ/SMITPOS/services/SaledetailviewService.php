@@ -668,12 +668,12 @@ class SaledetailviewService {
 
 		$rows = array();
 
-		mysqli_stmt_bind_result($stmt, $row->saleNo, $row->CRE_DTE, $row->saleTotalAmount, $row->saleTotalDiscount, $row->saleTotalBalance, $row->fullname);
+		mysqli_stmt_bind_result($stmt, $row->saleNo, $row->CRE_DTE, $row->saleTotalAmount, $row->saleTotalDiscount, $row->saleTotalBalance, $row->fullname, $row->saleType, $row->saleDone);
 
 	    while (mysqli_stmt_fetch($stmt)) {
 	      $rows[] = $row;
 	      $row = new stdClass();
-	      mysqli_stmt_bind_result($stmt, $row->saleNo, $row->CRE_DTE, $row->saleTotalAmount, $row->saleTotalDiscount, $row->saleTotalBalance, $row->fullname);
+	      mysqli_stmt_bind_result($stmt, $row->saleNo, $row->CRE_DTE, $row->saleTotalAmount, $row->saleTotalDiscount, $row->saleTotalBalance, $row->fullname, $row->saleType, $row->saleDone);
 	    }
 
 		mysqli_stmt_free_result($stmt);
