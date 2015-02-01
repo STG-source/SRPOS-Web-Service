@@ -123,6 +123,114 @@ class SaledetailService {
 	      return null;
 		}
 	}
+	
+	
+	/**
+	* Get Summary saleDetail by customerIndex
+	* Get List of Sale Detail By CustomerIndex
+	* Return SaleDetail Summary	
+	* Return List of Sale Detail
+	**/
+	public function get_Summary_And_List_SaleDetail_By_CustomerIndex($customerIndex, $saleStatus){
+		$result_summary = null;
+		$strSQL = "SELECT 
+					sum(saleTotalAmount) as saleTotalAmount,
+					sum(saleTotalDiscount) as saleTotalDiscount,
+					sum(saleTotalBalance) as saleTotalBalance
+					FROM saledetail  
+					where customerIndex = $customerIndex";
+
+		if ($saleStatus == 0){		
+			$strSQL = $strSQL." AND saleDone = 0";
+		}
+		
+		$stmt = mysqli_prepare($this->connection, $strSQL);
+		$this->throwExceptionOnError();		
+		
+		mysqli_stmt_execute($stmt);
+		$this->throwExceptionOnError();
+		
+		mysqli_stmt_bind_result($stmt, $row_Summary->saleTotalAmount, $row_Summary->saleTotalDiscount, $row_Summary->saleTotalBalance);
+		
+		if(mysqli_stmt_fetch($stmt)) {			
+	      $result_summary = $row_Summary;
+		} else {			
+	      $result_summary = null;
+		}	
+		
+		mysqli_stmt_free_result($stmt);				
+		
+		/*******************************************************************/
+		// Get List SaleDetail
+		
+		$strSQL = "SELECT * FROM saleDetail WHERE customerIndex = $customerIndex";
+			
+		if ($saleStatus == 0){
+			$strSQL = $strSQL." AND saleDone = 0";
+		}
+		
+		$stmt = mysqli_prepare($this->connection, $strSQL);
+		$this->throwExceptionOnError();		
+		
+		mysqli_stmt_execute($stmt);
+		$this->throwExceptionOnError();
+		
+		$rows_list_saleDetail = array();
+		
+		mysqli_stmt_bind_result($stmt, $row->saleIndex
+								,$row->saleNo
+								,$row->saleType
+								,$row->customerIndex
+								,$row->saleDone
+								,$row->creditCardID
+								,$row->approveCode
+								,$row->saleTotalAmount
+								,$row->saleTotalDiscount
+								,$row->saleTotalBalance
+								,$row->creditCardAuthorizer
+								,$row->CRE_DTE
+								,$row->CRE_USR
+								,$row->UPD_DTE
+								,$row->UPD_USR
+								,$row->DEL_DTE
+								,$row->DEL_USR);
+		
+	    while (mysqli_stmt_fetch($stmt)) {
+	      $row->CRE_DTE = new DateTime($row->CRE_DTE);
+	      $row->UPD_DTE = new DateTime($row->UPD_DTE);
+	      $row->DEL_DTE = new DateTime($row->DEL_DTE);
+	      $rows_list_saleDetail[] = $row;
+	      $row = new stdClass();
+	      mysqli_stmt_bind_result($stmt, $row->saleIndex
+								,$row->saleNo
+								,$row->saleType
+								,$row->customerIndex
+								,$row->saleDone
+								,$row->creditCardID
+								,$row->approveCode
+								,$row->saleTotalAmount
+								,$row->saleTotalDiscount
+								,$row->saleTotalBalance
+								,$row->creditCardAuthorizer
+								,$row->CRE_DTE
+								,$row->CRE_USR
+								,$row->UPD_DTE
+								,$row->UPD_USR
+								,$row->DEL_DTE
+								,$row->DEL_USR);
+	    }
+		
+		mysqli_stmt_free_result($stmt);		
+		mysqli_close($this->connection);
+		
+		
+		$rows_data = new stdClass();
+		$rows_data->saleSummary = $result_summary;
+		$rows_data->listSaleDetail = $rows_list_saleDetail;
+		
+		return $rows_data;
+
+	}	
 
 	/**
 	 * Returns the item corresponding to the value specified for the primary key.

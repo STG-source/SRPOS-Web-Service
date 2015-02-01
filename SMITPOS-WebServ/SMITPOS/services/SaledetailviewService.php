@@ -111,6 +111,302 @@ class SaledetailviewService {
 	      return null;
 		}
 	}
+	
+	/**
+	* get SaleDetail by date from to
+	* Return Sale Detail
+	**/
+	public function getSale_bySaleNo($dateBegin, $dateEnd, $index, $length){
+		$strSQL = "SELECT  
+		s.saleIndex, 
+		s.saleNo, 
+		s.customerIndex, 
+		s.saleType, 		
+		s.saleDone, 		
+		s.saleTotalAmount, 
+		s.saleTotalDiscount, 
+		s.saleTotalBalance, 
+		s.CRE_DTE, 
+		s.CRE_USR, 		
+		u.userIndex as userIndex, 
+		u.userID as userID, 
+		u.fullname as userName 
+		FROM saledetailview s 
+		inner join _myuser u on u.userID = s.CRE_USR ";	
+		
+		$where = "WHERE (CONVERT_TZ(s.CRE_DTE, '+00:00', '+07:00') BETWEEN ? AND ?) ";
+
+		if ($index > -1) {
+			$where .= " LIMIT {$index}, {$length} ";
+		}
+
+		$strSQL .= $where;
+
+		$stmt = mysqli_prepare($this->connection, $strSQL);
+		$this->throwExceptionOnError();
+
+		mysqli_stmt_bind_param($stmt, 'ss',
+				$dateBegin,
+				$dateEnd);
+		mysqli_stmt_execute($stmt);
+		$this->throwExceptionOnError();
+
+		$rows = array();
+
+		mysqli_stmt_bind_result($stmt, $row->saleIndex, 
+										$row->saleNo, 
+										$row->customerIndex,
+										$row->saleType, 										 
+										$row->saleDone, 
+										$row->saleTotalAmount, 
+										$row->saleTotalDiscount, 
+										$row->saleTotalBalance, 
+										$row->CRE_DTE, 
+										$row->CRE_USR, 
+										$row->userIndex, 
+										$row->userID, 
+										$row->userName);
+
+	    while (mysqli_stmt_fetch($stmt)) {
+		  $row->CRE_DTE = new DateTime($row->CRE_DTE);
+	      $rows[] = $row;
+	      $row = new stdClass();
+		  mysqli_stmt_bind_result($stmt, $row->saleIndex, 
+										$row->saleNo, 
+										$row->customerIndex,
+										$row->saleType, 										 
+										$row->saleDone, 
+										$row->saleTotalAmount, 
+										$row->saleTotalDiscount, 
+										$row->saleTotalBalance, 
+										$row->CRE_DTE, 
+										$row->CRE_USR, 
+										$row->userIndex, 
+										$row->userID, 
+										$row->userName);
+	    }
+
+		mysqli_stmt_free_result($stmt);
+		mysqli_close($this->connection);
+
+		return $rows;
+		
+		
+	}
+	
+	/**
+	* Query Sum of SaleDetail by from date to date and group by date
+	**/
+	
+	public function getSale_byDay($dateBegin, $dateEnd, $index, $length){
+		$strSQL = " SELECT a.count_sale_No,
+					ifnull(a.saleTotalAmount,0) as saleTotalAmount , 
+					ifnull(a.saleTotalDiscount,0) as saleTotalDiscount, 
+					ifnull(a.saleTotalBalance,0) as saleTotalBalance, 
+					ifnull(b.saleTotalBalance,0) as money, 
+					ifnull(c.saleTotalBalance,0) as credit_done, 
+					ifnull(d.saleTotalBalance,0) as credit_wait,
+					a.CRE_DTE as CRE_DTE
+					FROM (
+					
+					SELECT count( s.saleNo ) AS count_sale_No, sum( s.saleTotalAmount ) AS saleTotalAmount, sum( s.saleTotalDiscount ) AS saleTotalDiscount, sum( s.saleTotalBalance ) AS saleTotalBalance, date( convert_tz( s.CRE_DTE, '+00:00', '+07:00' ) ) as CRE_DTE
+					FROM saledetailview s
+					GROUP BY date( convert_tz( s.CRE_DTE, '+00:00', '+07:00' ) )
+					) a 
+					LEFT OUTER JOIN (
+					
+					SELECT sum( s.saleTotalBalance ) AS saleTotalBalance, date( convert_tz( s.CRE_DTE, '+00:00', '+07:00' ) ) as CRE_DTE
+					FROM saledetailview s
+					WHERE s.saleType =0
+					GROUP BY date( convert_tz( s.CRE_DTE, '+00:00', '+07:00' ) )					
+					) b ON b. CRE_DTE  = a. CRE_DTE
+					
+					LEFT OUTER JOIN (
+					
+					SELECT sum( s.saleTotalBalance ) AS saleTotalBalance, date( convert_tz( s.CRE_DTE, '+00:00', '+07:00' ) ) as CRE_DTE
+					FROM saledetailview s
+					WHERE s.saleType = 3 and saleDone <> 0
+					GROUP BY date( convert_tz( s.CRE_DTE, '+00:00', '+07:00' ) )					
+					) c ON c. CRE_DTE  = a. CRE_DTE
+					
+					LEFT OUTER JOIN (
+					
+					SELECT sum( s.saleTotalBalance ) AS saleTotalBalance, date( convert_tz( s.CRE_DTE, '+00:00', '+07:00' ) ) as CRE_DTE
+					FROM saledetailview s
+					WHERE s.saleType = 3 and saleDone = 0
+					GROUP BY date( convert_tz( s.CRE_DTE, '+00:00', '+07:00' ) )
+					) d ON d. CRE_DTE  = a. CRE_DTE ";					
+		
+		
+		$where = " WHERE (CONVERT_TZ(a. CRE_DTE, '+00:00', '+07:00') BETWEEN ? AND ?) ";
+
+		if ($index > -1) {
+			$where .= " LIMIT {$index}, {$length} ";
+		}
+
+		$strSQL .= $where;
+		
+
+		$stmt = mysqli_prepare($this->connection, $strSQL);
+		$this->throwExceptionOnError();
+
+		mysqli_stmt_bind_param($stmt, 'ss',	$dateBegin,	$dateEnd);
+		mysqli_stmt_execute($stmt);
+		$this->throwExceptionOnError();
+
+		$rows = array();
+
+		mysqli_stmt_bind_result($stmt, $row->count_sale_No,
+										$row->saleTotalAmount , 
+										$row->saleTotalDiscount, 
+										$row->saleTotalBalance, 
+										$row->money, 
+										$row->credit_done, 
+										$row->credit_wait,
+										$row->CRE_DTE);
+
+	    while (mysqli_stmt_fetch($stmt)) {
+		  $row->CRE_DTE = new DateTime($row->CRE_DTE);
+	      $rows[] = $row;
+	      $row = new stdClass();
+		 mysqli_stmt_bind_result($stmt, $row->count_sale_No,
+										$row->saleTotalAmount , 
+										$row->saleTotalDiscount, 
+										$row->saleTotalBalance, 
+										$row->money, 
+										$row->credit_done, 
+										$row->credit_wait,
+										$row->CRE_DTE);
+	    }
+
+		mysqli_stmt_free_result($stmt);
+		mysqli_close($this->connection);
+
+		return $rows;
+		
+		
+	}
+	
+	/**
+	* Query Sum of SaleDetail by fromdate to date and Group by Year by Month
+	**/
+	public function getSale_byMonth($dateBegin, $dateEnd, $index, $length){
+		$strSQL = " SELECT 
+					a.count_sale_No,
+					ifnull(a.saleTotalAmount,0) as saleTotalAmount , 
+					ifnull(a.saleTotalDiscount,0) as saleTotalDiscount, 
+					ifnull(a.saleTotalBalance,0) as saleTotalBalance, 
+					ifnull(b.saleTotalBalance,0) as money, 
+					ifnull(c.saleTotalBalance,0) as credit_done, 
+					ifnull(d.saleTotalBalance,0) as credit_wait,
+					a.CRE_MONTH,
+					a.CRE_YEAR
+					FROM 
+					(
+					
+						SELECT count( s.saleNo ) AS count_sale_No, 
+						sum( s.saleTotalAmount ) AS saleTotalAmount, 
+						sum( s.saleTotalDiscount ) AS saleTotalDiscount, 
+						sum( s.saleTotalBalance ) AS saleTotalBalance, 
+						month( CONVERT_TZ( s.CRE_DTE, '+00:00', '+07:00' ) ) AS CRE_MONTH, 
+						year( CONVERT_TZ( s.CRE_DTE, '+00:00', '+07:00' ) ) AS CRE_YEAR
+						
+						FROM saledetailview s
+						WHERE (CONVERT_TZ(s. CRE_DTE, '+00:00', '+07:00') BETWEEN ? AND ?)
+						GROUP BY month( CONVERT_TZ( s.CRE_DTE, '+00:00', '+07:00' ) ) , 
+						year( CONVERT_TZ( s.CRE_DTE, '+00:00', '+07:00' ) )
+					
+					) a
+					
+					LEFT OUTER JOIN (
+					
+						SELECT sum( s.saleTotalBalance ) AS saleTotalBalance, 
+						month( CONVERT_TZ( s.CRE_DTE, '+00:00', '+07:00' ) ) AS CRE_MONTH, 
+						year( CONVERT_TZ( s.CRE_DTE, '+00:00', '+07:00' ) ) AS CRE_YEAR
+						FROM saledetailview s
+						WHERE s.saleType =0
+						and  (CONVERT_TZ(s. CRE_DTE, '+00:00', '+07:00') BETWEEN ? AND ?)
+						GROUP BY  
+						month( CONVERT_TZ( s.CRE_DTE, '+00:00', '+07:00' ) ) , 
+						year( CONVERT_TZ( s.CRE_DTE, '+00:00', '+07:00' ) )
+					
+					) b ON b. CRE_MONTH  = a. CRE_MONTH and b.CRE_YEAR = a.CRE_YEAR 
+					
+					LEFT OUTER JOIN (
+					
+						SELECT sum( s.saleTotalBalance ) AS saleTotalBalance, 
+						month( CONVERT_TZ( s.CRE_DTE, '+00:00', '+07:00' ) ) AS CRE_MONTH, 
+						year( CONVERT_TZ( s.CRE_DTE, '+00:00', '+07:00' ) ) AS CRE_YEAR
+						FROM saledetailview s
+						WHERE s.saleType = 3 and saleDone <> 0
+						and (CONVERT_TZ(s. CRE_DTE, '+00:00', '+07:00') BETWEEN ? AND ?)
+						GROUP BY  
+						month( CONVERT_TZ( s.CRE_DTE, '+00:00', '+07:00' ) ) , 
+						year( CONVERT_TZ( s.CRE_DTE, '+00:00', '+07:00' ) )
+					
+					) c ON c. CRE_MONTH  = a. CRE_MONTH and c.CRE_YEAR = a.CRE_YEAR
+					
+					LEFT OUTER JOIN (
+					
+						SELECT sum( s.saleTotalBalance ) AS saleTotalBalance, 
+						month( CONVERT_TZ( s.CRE_DTE, '+00:00', '+07:00' ) ) AS CRE_MONTH, 
+						year( CONVERT_TZ( s.CRE_DTE, '+00:00', '+07:00' ) ) AS CRE_YEAR
+						FROM saledetailview s
+						WHERE s.saleType = 3 and saleDone = 0
+						and (CONVERT_TZ(s. CRE_DTE, '+00:00', '+07:00') BETWEEN ? AND ?)
+						GROUP BY  
+						month( CONVERT_TZ( s.CRE_DTE, '+00:00', '+07:00' ) ) , 
+						year( CONVERT_TZ( s.CRE_DTE, '+00:00', '+07:00' ) )
+					
+					) d ON d. CRE_MONTH  = a. CRE_MONTH and d.CRE_YEAR = a.CRE_YEAR
+					
+					ORDER BY a.CRE_YEAR, a. CRE_MONTH ";					
+		
+		if ($index > -1) {
+			$strSQL .= " LIMIT {$index}, {$length} ";
+		}		
+		
+
+		$stmt = mysqli_prepare($this->connection, $strSQL);
+		$this->throwExceptionOnError();
+
+		mysqli_stmt_bind_param($stmt, 'ssssssss',$dateBegin,$dateEnd,$dateBegin,$dateEnd,$dateBegin,$dateEnd,$dateBegin,$dateEnd);
+		mysqli_stmt_execute($stmt);
+		$this->throwExceptionOnError();
+
+		$rows = array();
+
+		mysqli_stmt_bind_result($stmt, $row->count_sale_No,
+										$row->saleTotalAmount , 
+										$row->saleTotalDiscount, 
+										$row->saleTotalBalance, 
+										$row->money, 
+										$row->credit_done, 
+										$row->credit_wait,
+										$row->CRE_MONTH,
+										$row->CRE_YEAR);
+
+	    while (mysqli_stmt_fetch($stmt)) {
+	      $rows[] = $row;
+	      $row = new stdClass();
+		 mysqli_stmt_bind_result($stmt, $row->count_sale_No,
+										$row->saleTotalAmount , 
+										$row->saleTotalDiscount, 
+										$row->saleTotalBalance, 
+										$row->money, 
+										$row->credit_done, 
+										$row->credit_wait,
+										$row->CRE_MONTH,
+										$row->CRE_YEAR);
+	    }
+
+		mysqli_stmt_free_result($stmt);
+		mysqli_close($this->connection);
+
+		return $rows;
+		
+		
+	}
 
 	/**
 	 * Returns the item corresponding to the value specified for the primary key.
