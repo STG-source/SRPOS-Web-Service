@@ -623,9 +623,6 @@ class ScustomerService {
 		$customerRow = $this->get_customerByID($customerIndex);
 		$customerRow->customerPoint += $pointScore;
 
-		// $this->update_customer($customerRow);
-		// PHP Fatal error:  Call to undefined method DateTime::toString() in ScustomerService.php on line 280
-
 		// Manually update customer point score
 		$stmt = mysqli_prepare($this->connection, "UPDATE $this->tablename SET customerPoint = ? WHERE customerIndex = ?");
 		$this->throwExceptionOnError();
