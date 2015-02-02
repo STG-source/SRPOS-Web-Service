@@ -102,16 +102,16 @@ class ScustomerService {
 	* Sale Summary (Depend on flag value)
 	* List of Customer's sale Detail data
 	**/
-	public function get_customerSale($search_Key,$process_Flag){	
+	public function get_customerSale($search_Key,$process_Flag){
 		require_once 'SaledetailService.php';
 		// define Valiable
-		$customerDetail = null;
+		$basicCustomerInfo = null;
 		$saleSummary = null;
 		$itemlistSaleDetail = null;
-		
+
 		// get Customer Data
 		$searchCause = "SELECT * FROM $this->tablename WHERE 1 AND CONCAT_WS(' ', fullname, email, customerID, phone, citizenID, passportID) like '%".$search_Key."%'";	
-		
+
 		$stmt = mysqli_prepare($this->connection, $searchCause);
 		$this->throwExceptionOnError();		
 		
@@ -131,19 +131,19 @@ class ScustomerService {
 	      $row->CRE_DTE = new DateTime($row->CRE_DTE);
 	      $row->UPD_DTE = new DateTime($row->UPD_DTE);
 	      $row->DEL_DTE = new DateTime($row->DEL_DTE);
-	      $customerDetail = $row;
+	      $basicCustomerInfo = $row;
 		} else {
-	      $customerDetail = null;
+	      $basicCustomerInfo = null;
 		}
 		
 		// Get SaleDetail for Customer By CustomerIndex
-		if($customerDetail != null){
+		if($basicCustomerInfo != null){
 			$SaleDetailService = new SaledetailService();
-			$data_SaleDetail = $SaleDetailService->get_Summary_And_List_SaleDetail_By_CustomerIndex($customerDetail->customerIndex,$process_Flag);
+			$data_SaleDetail = $SaleDetailService->get_Summary_And_List_SaleDetail_By_CustomerIndex($basicCustomerInfo->customerIndex,$process_Flag);
 		}
 		
 		$rows_data = new stdClass();
-		$rows_data->customerDetail = $customerDetail;
+		$rows_data->basicCustomerInfo = $basicCustomerInfo;
 		$rows_data->saleSummary = $data_SaleDetail->saleSummary;
 		$rows_data->itemlistSaleDetail = $data_SaleDetail->listSaleDetail;	
 		
@@ -235,7 +235,7 @@ class ScustomerService {
 		$SaledetailSalelist = $SaleDetailService->getSaledetailSalelist_bySaleNo($data_customerSale->itemlistSaleDetail[0]->saleNo);
 		
 		$rows_data = new stdClass();
-		$rows_data->customerDetail = $data_customerSale->customerDetail;
+		$rows_data->basicCustomerInfo = $data_customerSale->basicCustomerInfo;
 		$rows_data->saleSummary = $data_customerSale->saleSummary;
 		$rows_data->itemlistSaleDetail = $data_customerSale->itemlistSaleDetail;
 		$rows_data->SaledetailSalelist = $SaledetailSalelist;	
