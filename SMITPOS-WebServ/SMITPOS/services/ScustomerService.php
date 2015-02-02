@@ -107,7 +107,7 @@ class ScustomerService {
 		// define Valiable
 		$basicCustomerInfo = null;
 		$saleSummary = null;
-		$itemlistSaleDetail = null;
+		$listofSaleDetail = null;
 
 		// get Customer Data
 		$searchCause = "SELECT * FROM $this->tablename WHERE 1 AND CONCAT_WS(' ', fullname, email, customerID, phone, citizenID, passportID) like '%".$search_Key."%'";	
@@ -145,7 +145,7 @@ class ScustomerService {
 		$rows_data = new stdClass();
 		$rows_data->basicCustomerInfo = $basicCustomerInfo;
 		$rows_data->saleSummary = $data_SaleDetail->saleSummary;
-		$rows_data->itemlistSaleDetail = $data_SaleDetail->listSaleDetail;	
+		$rows_data->listofSaleDetail = $data_SaleDetail->listSaleDetail;
 		
 		return $rows_data;		
 	}
@@ -232,13 +232,13 @@ class ScustomerService {
 		$data_customerSale = $this->get_customerSale($search_Key,1);
 		
 		$SaleDetailService = new SaledetailService();		
-		$SaledetailSalelist = $SaleDetailService->getSaledetailSalelist_bySaleNo($data_customerSale->itemlistSaleDetail[0]->saleNo);
+		$SaledetailSalelist = $SaleDetailService->getSaledetailSalelist_bySaleNo($data_customerSale->listofSaleDetail[0]->saleNo);
 		
 		$rows_data = new stdClass();
 		$rows_data->basicCustomerInfo = $data_customerSale->basicCustomerInfo;
 		$rows_data->saleSummary = $data_customerSale->saleSummary;
-		$rows_data->itemlistSaleDetail = $data_customerSale->itemlistSaleDetail;
-		$rows_data->SaledetailSalelist = $SaledetailSalelist;	
+		$rows_data->listofSaleDetail = $data_customerSale->listofSaleDetail;
+		$rows_data->SaledetailSalelist = $SaledetailSalelist;
 		
 		return $rows_data;	
 	}
