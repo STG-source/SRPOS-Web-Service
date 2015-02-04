@@ -19,8 +19,8 @@
  *
  */
 
-//include 'ScustomerService.php';
-// Version 1.15e
+
+// Version 1.15e <-- Need To Fix
 class SaledetailService {
 
 	var $username = "root";
@@ -1760,6 +1760,7 @@ class SaledetailService {
 	}
 
 	public function addSalelistTransition_own($saledetail, $itemlist) {
+		require_once 'ScustomerService.php';
 
 		$autoidlist = array();
 
