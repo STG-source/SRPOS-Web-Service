@@ -16,6 +16,7 @@ This README would normally document whatever steps are necessary to get your app
 * Database configuration
 * How to run tests
 * Deployment instructions
+* [SRPOS Milestone](https://sites.google.com/a/smitsolution.com/project-milestone/documents)
 
 ### Contribution guidelines ###
 
