@@ -134,15 +134,37 @@ class SaledetailService {
 	public function get_Summary_And_List_SaleDetail_By_CustomerIndex($customerIndex, $saleStatus){
 		$result_summary = null;
 		$strSQL = "SELECT 
-					sum(saleTotalAmount) as saleTotalAmount,
-					sum(saleTotalDiscount) as saleTotalDiscount,
-					sum(saleTotalBalance) as saleTotalBalance
-					FROM saledetail  
-					where customerIndex = $customerIndex";
+					a.saleTotalBalance as Accumulated_Total,
+					b.saleTotalBalance as Paid_Total,
+					c.saleTotalBalance as Outstanding_balance
+					 FROM (					
+						SELECT 
+						sum(saleTotalBalance) as saleTotalBalance,
+						customerIndex 
+						FROM saledetail  
+						WHERE customerIndex = $customerIndex 
+						AND saleDone <> -1
+					)  a 
+					LEFT OUTER JOIN
+					(
+						SELECT 
+						sum(saleTotalBalance) as saleTotalBalance,
+						customerIndex 
+						FROM saledetail  
+						WHERE customerIndex = $customerIndex 
+						AND saleDone <> -1 AND saleDone <> 0 
+					)  b  ON b.customerIndex  = a.customerIndex 
+					LEFT OUTER JOIN
+					(					
+						SELECT 
+						sum(saleTotalBalance) as saleTotalBalance,
+						customerIndex 
+						FROM saledetail  
+						WHERE customerIndex = $customerIndex 
+						AND saleDone = 0 
+					)  c  ON  c.customerIndex  = a.customerIndex ";
 
-		if ($saleStatus == 0){		
-			$strSQL = $strSQL." AND saleDone = 0";
-		}
+
 		
 		$stmt = mysqli_prepare($this->connection, $strSQL);
 		$this->throwExceptionOnError();		
@@ -150,7 +172,7 @@ class SaledetailService {
 		mysqli_stmt_execute($stmt);
 		$this->throwExceptionOnError();
 		
-		mysqli_stmt_bind_result($stmt, $row_Summary->saleTotalAmount, $row_Summary->saleTotalDiscount, $row_Summary->saleTotalBalance);
+		mysqli_stmt_bind_result($stmt, $row_Summary->Accumulated_Total, $row_Summary->Paid_Total, $row_Summary->Outstanding_balance);
 		
 		if(mysqli_stmt_fetch($stmt)) {			
 	      $result_summary = $row_Summary;

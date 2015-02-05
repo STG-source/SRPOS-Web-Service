@@ -105,10 +105,8 @@ class ScustomerService {
 	public function get_customerSale($search_Key,$process_Flag){
 		require_once 'SaledetailService.php';
 		// define Valiable
-		$basicCustomerInfo = null;
-		$saleSummary = null;
-		$listofSaleDetail = null;
-
+		$customerDetail = null;
+		
 		// get Customer Data
 		$searchCause = "SELECT * FROM $this->tablename WHERE 1 AND CONCAT_WS(' ', fullname, email, customerID, phone, citizenID, passportID) like '%".$search_Key."%'";	
 
@@ -118,35 +116,73 @@ class ScustomerService {
 		mysqli_stmt_execute($stmt);
 		$this->throwExceptionOnError();
 		
-		mysqli_stmt_bind_result($stmt, $row->customerIndex, $row->customerID,
-		$row->fullname, 
-		$row->address, $row->city, $row->province, $row->postcode, 
-		$row->phone, $row->email, 
-		$row->customerClass, $row->customerType, $row->customerAVP, $row->customerPoint, 
-		$row->citizenID, $row->passportID, $row->title,
-		$row->cellPhone, $row->fax,
-		$row->CRE_DTE, $row->CRE_USR, $row->UPD_DTE, $row->UPD_USR, $row->DEL_DTE, $row->DEL_USR);
+		/* store result */
+    	mysqli_stmt_store_result($stmt);
 		
-		if(mysqli_stmt_fetch($stmt)) {
-	      $row->CRE_DTE = new DateTime($row->CRE_DTE);
-	      $row->UPD_DTE = new DateTime($row->UPD_DTE);
-	      $row->DEL_DTE = new DateTime($row->DEL_DTE);
-	      $basicCustomerInfo = $row;
-		} else {
-	      $basicCustomerInfo = null;
-		}
+		$num_rows = mysqli_stmt_num_rows($stmt);
 		
-		// Get SaleDetail for Customer By CustomerIndex
-		if($basicCustomerInfo != null){
-			$SaleDetailService = new SaledetailService();
-			$data_SaleDetail = $SaleDetailService->get_Summary_And_List_SaleDetail_By_CustomerIndex($basicCustomerInfo->customerIndex,$process_Flag);
+		if($num_rows == 0){
+			$customerDetail = null;
+		}elseif($num_rows == 1){
+			mysqli_stmt_bind_result($stmt, $row->customerIndex, $row->customerID,
+			$row->fullname, 
+			$row->address, $row->city, $row->province, $row->postcode, 
+			$row->phone, $row->email, 
+			$row->customerClass, $row->customerType, $row->customerAVP, $row->customerPoint, 
+			$row->citizenID, $row->passportID, $row->title,
+			$row->cellPhone, $row->fax,
+			$row->CRE_DTE, $row->CRE_USR, $row->UPD_DTE, $row->UPD_USR, $row->DEL_DTE, $row->DEL_USR);
+			
+			if(mysqli_stmt_fetch($stmt)){
+				$customerDetail = $row;
+			}
+		}else{
+			mysqli_stmt_bind_result($stmt, $row->customerIndex, $row->customerID,
+			$row->fullname, 
+			$row->address, $row->city, $row->province, $row->postcode, 
+			$row->phone, $row->email, 
+			$row->customerClass, $row->customerType, $row->customerAVP, $row->customerPoint, 
+			$row->citizenID, $row->passportID, $row->title,
+			$row->cellPhone, $row->fax,
+			$row->CRE_DTE, $row->CRE_USR, $row->UPD_DTE, $row->UPD_USR, $row->DEL_DTE, $row->DEL_USR);
+			
+			
+			 while (mysqli_stmt_fetch($stmt)) {
+				$row->CRE_DTE = new DateTime($row->CRE_DTE);
+				$row->UPD_DTE = new DateTime($row->UPD_DTE);
+				$row->DEL_DTE = new DateTime($row->DEL_DTE);
+			  
+				$rows[] = $row;
+				$row = new stdClass();
+		  
+				mysqli_stmt_bind_result($stmt, $row->customerIndex, $row->customerID,
+				$row->fullname, 
+				$row->address, $row->city, $row->province, $row->postcode, 
+				$row->phone, $row->email, 
+				$row->customerClass, $row->customerType, $row->customerAVP, $row->customerPoint, 
+				$row->citizenID, $row->passportID, $row->title,
+				$row->cellPhone, $row->fax,
+				$row->CRE_DTE, $row->CRE_USR, $row->UPD_DTE, $row->UPD_USR, $row->DEL_DTE, $row->DEL_USR);
+			
+			}
+			
+			$customerDetail = $rows;		
 		}
 		
 		$rows_data = new stdClass();
-		$rows_data->basicCustomerInfo = $basicCustomerInfo;
-		$rows_data->saleSummary = $data_SaleDetail->saleSummary;
-		$rows_data->listofSaleDetail = $data_SaleDetail->listSaleDetail;
+		$rows_data->customerDetail = $customerDetail;
+		$rows_data->saleSummary = null;
+		$rows_data->itemlistSaleDetail = null;
 		
+		// Get SaleDetail for Customer By CustomerIndex
+		if($customerDetail != null && $num_rows == 1){
+			$SaleDetailService = new SaledetailService();
+			$data_SaleDetail = $SaleDetailService->get_Summary_And_List_SaleDetail_By_CustomerIndex($customerDetail->customerIndex,$process_Flag);
+			$rows_data->saleSummary = $data_SaleDetail->saleSummary;		
+			$rows_data->itemlistSaleDetail = $data_SaleDetail->listSaleDetail;
+		}
+		
+				
 		return $rows_data;		
 	}
 	
@@ -450,10 +486,46 @@ class ScustomerService {
 	* Return New Customer ID 
 	**/	
 	public function create_newCustomer($item){
-		$stmt = mysqli_prepare($this->connection, "INSERT INTO $this->tablename (customerID, fullname, address, city, province, postcode, phone, email, customerClass, customerType, customerAVP, customerPoint, citizenID, passportID, title, cellPhone, fax, CRE_DTE, CRE_USR) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)");
+		
+		// Generate CustomerID
+		$strSQL = "SELECT max(customerIndex) + 1 as max_index FROM _customer";
+		
+		$stmt = mysqli_prepare($this->connection, $strSQL);
+		$this->throwExceptionOnError();	
+		
+		mysqli_stmt_execute($stmt);
 		$this->throwExceptionOnError();
+		
+		mysqli_stmt_bind_result($stmt, $row->max_index);
+		
+		$strCustomerID = "";
+		if(mysqli_stmt_fetch($stmt)) {	
+			if (strlen ($row->max_index) == 1){
+				$strCustomerID = "CU0000000".$row->max_index;
+			}elseif(strlen ($row->max_index) == 2){
+				$strCustomerID = "CU000000".$row->max_index;
+			}elseif(strlen ($row->max_index) == 3){
+				$strCustomerID = "CU00000".$row->max_index;
+			}elseif(strlen ($row->max_index) == 4){
+				$strCustomerID = "CU0000".$row->max_index;
+			}elseif(strlen ($row->max_index) == 5){
+				$strCustomerID = "CU000".$row->max_index;
+			}elseif(strlen ($row->max_index) == 6){
+				$strCustomerID = "CU00".$row->max_index;
+			}elseif(strlen ($row->max_index) == 7){
+				$strCustomerID = "CU0".$row->max_index;
+			}elseif(strlen ($row->max_index) == 8){
+				$strCustomerID = "CU".$row->max_index;							
+			}     	      	
+		}
+		
+		mysqli_stmt_free_result($stmt);	
+				
+		$stmt = mysqli_prepare($this->connection, "INSERT INTO $this->tablename (customerID, fullname, address, city, province, postcode, phone, email, customerClass, customerType, customerAVP, customerPoint, citizenID, passportID, title, cellPhone, fax, CRE_DTE, CRE_USR) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)");
+		$this->throwExceptionOnError();		
+		
 
-		mysqli_stmt_bind_param($stmt, 'ssssssssssddsssssss', $item->customerID, $item->fullname, $item->address, $item->city, $item->province, $item->postcode, $item->phone, $item->email, $item->customerClass, $item->customerType, $item->customerAVP, $item->customerPoint, $item->citizenID ,$item->passportID,$item->title,$row->cellPhone,$item->fax, $item->CRE_DTE->format('Y-m-d H:i:s'), $item->CRE_USR);
+		mysqli_stmt_bind_param($stmt, 'ssssssssssddsssssss', $strCustomerID, $item->fullname, $item->address, $item->city, $item->province, $item->postcode, $item->phone, $item->email, $item->customerClass, $item->customerType, $item->customerAVP, $item->customerPoint, $item->citizenID ,$item->passportID,$item->title,$row->cellPhone,$item->fax, $item->CRE_DTE->format('Y-m-d H:i:s'), $item->CRE_USR);
 		
 		
 		$this->throwExceptionOnError();
@@ -461,12 +533,14 @@ class ScustomerService {
 		mysqli_stmt_execute($stmt);		
 		$this->throwExceptionOnError();
 
-		$autoid = mysqli_stmt_insert_id($stmt);
+		//$autoid = mysqli_stmt_insert_id($stmt);
 
-		mysqli_stmt_free_result($stmt);		
-		mysqli_close($this->connection);
+		//mysqli_stmt_free_result($stmt);		
+		//mysqli_close($this->connection);
 
-		return $autoid;
+		return $strCustomerID;
+		
+		
 	}
 
 	/**
