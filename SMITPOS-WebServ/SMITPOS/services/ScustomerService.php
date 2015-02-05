@@ -268,12 +268,12 @@ class ScustomerService {
 		$data_customerSale = $this->get_customerSale($search_Key,1);
 		
 		$SaleDetailService = new SaledetailService();		
-		$SaledetailSalelist = $SaleDetailService->getSaledetailSalelist_bySaleNo($data_customerSale->listofSaleDetail[0]->saleNo);
+		$SaledetailSalelist = $SaleDetailService->getSaledetailSalelist_bySaleNo($data_customerSale->itemlistSaleDetail[0]->saleNo);
 		
 		$rows_data = new stdClass();
-		$rows_data->basicCustomerInfo = $data_customerSale->basicCustomerInfo;
+		$rows_data->customerDetail = $data_customerSale->customerDetail;
 		$rows_data->saleSummary = $data_customerSale->saleSummary;
-		$rows_data->listofSaleDetail = $data_customerSale->listofSaleDetail;
+		$rows_data->itemlistSaleDetail = $data_customerSale->itemlistSaleDetail;
 		$rows_data->SaledetailSalelist = $SaledetailSalelist;
 		
 		return $rows_data;	
