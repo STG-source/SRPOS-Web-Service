@@ -133,8 +133,9 @@ class ScustomerService {
 			$row->cellPhone, $row->fax,
 			$row->CRE_DTE, $row->CRE_USR, $row->UPD_DTE, $row->UPD_USR, $row->DEL_DTE, $row->DEL_USR);
 			
-			if(mysqli_stmt_fetch($stmt)){
-				$customerDetail = $row;
+			if(mysqli_stmt_fetch($stmt)){				
+				$rows[] = $row;
+				$customerDetail = $rows;
 			}
 		}else{
 			mysqli_stmt_bind_result($stmt, $row->customerIndex, $row->customerID,
@@ -177,7 +178,7 @@ class ScustomerService {
 		// Get SaleDetail for Customer By CustomerIndex
 		if($customerDetail != null && $num_rows == 1){
 			$SaleDetailService = new SaledetailService();
-			$data_SaleDetail = $SaleDetailService->get_Summary_And_List_SaleDetail_By_CustomerIndex($customerDetail->customerIndex,$process_Flag);
+			$data_SaleDetail = $SaleDetailService->get_Summary_And_List_SaleDetail_By_CustomerIndex($customerDetail[0]->customerIndex,$process_Flag);
 			$rows_data->saleSummary = $data_SaleDetail->saleSummary;		
 			$rows_data->itemlistSaleDetail = $data_SaleDetail->listSaleDetail;
 		}
