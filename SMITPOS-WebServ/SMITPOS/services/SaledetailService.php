@@ -185,7 +185,11 @@ class SaledetailService {
 		/*******************************************************************/
 		// Get List SaleDetail
 		
-		$strSQL = "SELECT * FROM saleDetail WHERE customerIndex = $customerIndex";
+		//$strSQL = "SELECT * FROM saleDetail WHERE customerIndex = $customerIndex";
+		
+		$strSQL = "SELECT sd.*, CONCAT_WS(' ',u.userID ,u.fullname) as userName FROM saleDetail  sd
+				INNER JOIN _myuser u ON u.userID = sd.CRE_USR
+				WHERE customerIndex = $customerIndex";
 			
 		if ($saleStatus == 0){
 			$strSQL = $strSQL." AND saleDone = 0";
@@ -215,7 +219,8 @@ class SaledetailService {
 								,$row->UPD_DTE
 								,$row->UPD_USR
 								,$row->DEL_DTE
-								,$row->DEL_USR);
+								,$row->DEL_USR
+								,$row->userName);
 		
 	    while (mysqli_stmt_fetch($stmt)) {
 	      $row->CRE_DTE = new DateTime($row->CRE_DTE);
@@ -239,7 +244,8 @@ class SaledetailService {
 								,$row->UPD_DTE
 								,$row->UPD_USR
 								,$row->DEL_DTE
-								,$row->DEL_USR);
+								,$row->DEL_USR
+								,$row->userName);
 	    }
 		
 		mysqli_stmt_free_result($stmt);		
