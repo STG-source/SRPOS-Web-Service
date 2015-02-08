@@ -133,8 +133,9 @@ class ScustomerService {
 			$row->cellPhone, $row->fax,
 			$row->CRE_DTE, $row->CRE_USR, $row->UPD_DTE, $row->UPD_USR, $row->DEL_DTE, $row->DEL_USR);
 			
-			if(mysqli_stmt_fetch($stmt)){
-				$customerDetail = $row;
+			if(mysqli_stmt_fetch($stmt)){				
+				$rows[] = $row; // Set Array
+				$customerDetail = $rows;
 			}
 		}else{
 			mysqli_stmt_bind_result($stmt, $row->customerIndex, $row->customerID,
@@ -177,7 +178,7 @@ class ScustomerService {
 		// Get SaleDetail for Customer By CustomerIndex
 		if($customerDetail != null && $num_rows == 1){
 			$SaleDetailService = new SaledetailService();
-			$data_SaleDetail = $SaleDetailService->get_Summary_And_List_SaleDetail_By_CustomerIndex($customerDetail->customerIndex,$process_Flag);
+			$data_SaleDetail = $SaleDetailService->get_Summary_And_List_SaleDetail_By_CustomerIndex($customerDetail[0]->customerIndex,$process_Flag);
 			$rows_data->saleSummary = $data_SaleDetail->saleSummary;		
 			$rows_data->itemlistSaleDetail = $data_SaleDetail->listSaleDetail;
 		}
@@ -198,24 +199,66 @@ class ScustomerService {
 		if ($index > -1) {
 			$limit .= " LIMIT {$index}, {$length} ";
 		}
-		
-		$strSQL = "SELECT * FROM ( 
-					SELECT  
-					c.customerIndex, 
-					c.customerID, 
-					c.fullname, 
-					c.phone, 
-					c.email, 
-					sum(saleTotalAmount) as saleTotalAmount, 
-					sum(saleTotalDiscount) as saleTotalDiscount, 
-					sum(saleTotalBalance) as saleTotalBalance 					
-					FROM _customer c 
-					INNER JOIN saledetail s on s.customerIndex = c.customerIndex 
-					group by c.customerIndex,c.customerID,c.fullname, 
-					c.phone, 
-					c.email 
-					) data ".$limit;
-		
+				
+		$strSQL = "SELECT 
+					cus.customerIndex, 
+					cus.customerID, 
+					cus.fullname, 
+					cus.address, 
+					cus.city, 
+					cus.province, 
+					cus.postcode, 
+					cus.phone, 
+					cus.email, 
+					cus.customerClass, 
+					cus.customerType, 
+					cus.customerAVP, 
+					cus.customerPoint, 
+					cus.citizenID, 
+					cus.passportID, 
+					cus.title, 
+					cus.cellPhone, 
+					cus.fax, 
+					cus.CRE_USR,
+					cus.CRE_DTE, 
+					cus.UPD_USR, 
+					cus.UPD_DTE,
+					cus.DEL_USR,
+					cus.DEL_DTE,
+					ifnull(a.saleTotalBalance,0) as grandTotalBalance,
+					ifnull(b.saleTotalBalance,0) as paidTotal,
+					ifnull(c.saleTotalBalance,0) as remainTotal
+					 FROM _customer cus
+					 LEFT OUTER JOIN
+					 (					
+						SELECT 
+						sum(saleTotalBalance) as saleTotalBalance,
+						customerIndex 
+						FROM saledetail  
+						WHERE saleDone <> -1
+						GROUP BY customerIndex
+					)  a  ON cus.customerIndex  = a.customerIndex 
+					LEFT OUTER JOIN
+					(
+						SELECT 
+						sum(saleTotalBalance) as saleTotalBalance,
+						customerIndex 
+						FROM saledetail  
+						WHERE saleDone <> -1 AND saleDone <> 0 
+						GROUP BY customerIndex
+					)  b  ON b.customerIndex  = a.customerIndex 
+					LEFT OUTER JOIN
+					(					
+						SELECT 
+						sum(saleTotalBalance) as saleTotalBalance,
+						customerIndex 
+						FROM saledetail  
+						WHERE saleDone = 0 
+						GROUP BY customerIndex
+					)  c  ON  c.customerIndex  = a.customerIndex  
+					".$limit;
+					
+					
 		$stmt = mysqli_prepare($this->connection, $strSQL);
 		$this->throwExceptionOnError();		
 		
@@ -223,31 +266,71 @@ class ScustomerService {
 		$this->throwExceptionOnError();
 		
 		$rows = array();
-			
 		
 		mysqli_stmt_bind_result($stmt, $row->customerIndex, 
-										$row->customerID,
-										$row->fullname, 										
+										$row->customerID, 
+										$row->fullname, 
+										$row->address, 
+										$row->city, 
+										$row->province, 
+										$row->postcode, 
 										$row->phone, 
 										$row->email, 
-										$row->saleTotalAmount, 
-										$row->saleTotalDiscount, 
-										$row->saleTotalBalance);
+										$row->customerClass, 
+										$row->customerType, 
+										$row->customerAVP, 
+										$row->customerPoint, 
+										$row->citizenID, 
+										$row->passportID, 
+										$row->title, 
+										$row->cellPhone, 
+										$row->fax,	
+										$row->CRE_USR, 
+										$row->CRE_DTE,										
+										$row->UPD_USR, 
+										$row->UPD_DTE,										
+										$row->DEL_USR, 
+										$row->DEL_DTE,
+										$row->grandTotalBalance, 
+										$row->paidTotal, 
+										$row->remainTotal);
 		
 		
 		
 	    while (mysqli_stmt_fetch($stmt)) {
+		  $row->CRE_DTE = new DateTime($row->CRE_DTE);
+	      $row->UPD_DTE = new DateTime($row->UPD_DTE);
+	      $row->DEL_DTE = new DateTime($row->DEL_DTE);
 	      $rows[] = $row;
 	      $row = new stdClass();
 	  
-		 mysqli_stmt_bind_result($stmt, $row->customerIndex, 
-										$row->customerID,
-										$row->fullname, 										
+		mysqli_stmt_bind_result($stmt, $row->customerIndex, 
+										$row->customerID, 
+										$row->fullname, 
+										$row->address, 
+										$row->city, 
+										$row->province, 
+										$row->postcode, 
 										$row->phone, 
 										$row->email, 
-										$row->saleTotalAmount, 
-										$row->saleTotalDiscount, 
-										$row->saleTotalBalance);
+										$row->customerClass, 
+										$row->customerType, 
+										$row->customerAVP, 
+										$row->customerPoint, 
+										$row->citizenID, 
+										$row->passportID, 
+										$row->title, 
+										$row->cellPhone, 
+										$row->fax,	
+										$row->CRE_USR, 
+										$row->CRE_DTE,										
+										$row->UPD_USR, 
+										$row->UPD_DTE,										
+										$row->DEL_USR, 
+										$row->DEL_DTE,
+										$row->grandTotalBalance, 
+										$row->paidTotal, 
+										$row->remainTotal);
 		
 	    }
 		
@@ -524,11 +607,11 @@ class ScustomerService {
 		
 		mysqli_stmt_free_result($stmt);	
 				
-		$stmt = mysqli_prepare($this->connection, "INSERT INTO $this->tablename (customerID, fullname, address, city, province, postcode, phone, email, customerClass, customerType, customerAVP, customerPoint, citizenID, passportID, title, cellPhone, fax, CRE_DTE, CRE_USR) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)");
+		$stmt = mysqli_prepare($this->connection, "INSERT INTO $this->tablename (customerID, fullname, address, city, province, postcode, phone, email, customerClass, customerType, customerAVP, customerPoint, citizenID, passportID, title, cellPhone, fax, CRE_DTE, CRE_USR, UPD_DTE ,DEL_DTE ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)");
 		$this->throwExceptionOnError();		
 		
 
-		mysqli_stmt_bind_param($stmt, 'ssssssssssddsssssss', $strCustomerID, $item->fullname, $item->address, $item->city, $item->province, $item->postcode, $item->phone, $item->email, $item->customerClass, $item->customerType, $item->customerAVP, $item->customerPoint, $item->citizenID ,$item->passportID,$item->title,$row->cellPhone,$item->fax, $item->CRE_DTE->format('Y-m-d H:i:s'), $item->CRE_USR);
+		mysqli_stmt_bind_param($stmt, 'ssssssssssddsssssssss', $strCustomerID, $item->fullname, $item->address, $item->city, $item->province, $item->postcode, $item->phone, $item->email, $item->customerClass, $item->customerType, $item->customerAVP, $item->customerPoint, $item->citizenID ,$item->passportID,$item->title,$row->cellPhone,$item->fax, $item->CRE_DTE->format('Y-m-d H:i:s'), $item->CRE_USR, $item->CRE_DTE->format('Y-m-d H:i:s'), $item->CRE_DTE->format('Y-m-d H:i:s'));
 		
 		
 		$this->throwExceptionOnError();
