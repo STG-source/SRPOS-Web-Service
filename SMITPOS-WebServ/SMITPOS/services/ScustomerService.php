@@ -134,7 +134,7 @@ class ScustomerService {
 			$row->CRE_DTE, $row->CRE_USR, $row->UPD_DTE, $row->UPD_USR, $row->DEL_DTE, $row->DEL_USR);
 			
 			if(mysqli_stmt_fetch($stmt)){				
-				$rows[] = $row;
+				$rows[] = $row; // Set Array
 				$customerDetail = $rows;
 			}
 		}else{
