@@ -1351,7 +1351,87 @@ class SaledetailService {
 		
 		return 1;
 	}
-	
+
+	/**
+	 * updateBillPayment_nocash
+	 */
+	public function updateBillPayment_nocash($saledetail, $itemlist) {
+		$saleNo = $saledetail->saleNo;
+
+		foreach($itemlist as $item){
+			$itemStock = $this->checkItemStock($item->itemIndex); // Query Check Item Qty
+			$saleQTY = $item->saleQTY; 
+			$stockQty = $itemStock - $item->saleQTY; // $item->stockQTY
+			$stmt = mysqli_prepare($this->connection, "UPDATE $this->table_item SET itemStock = ? WHERE itemIndex = ?"); // Update Item
+			mysqli_stmt_bind_param($stmt, 'ii', $stockQty, $item->itemIndex);
+			mysqli_stmt_execute($stmt);
+			mysqli_stmt_free_result($stmt);	
+			mysqli_stmt_close($stmt);
+			
+			$stmt = mysqli_prepare($this->connection, "UPDATE $this->table_salelist SET stockQTY = ? WHERE itemIndex = ? AND saleNo = ?"); // Update SaleList
+			mysqli_stmt_bind_param($stmt, 'iis', $stockQty, $item->itemIndex, $saleNo);
+			mysqli_stmt_execute($stmt);
+			mysqli_stmt_free_result($stmt);	
+			mysqli_stmt_close($stmt);
+			
+			if(sizeof($item->itemOPT)){ // Check Item OPT
+				foreach($item->itemOPT as $itemOpt) // START LOOP ITEM OPT ======================
+				{
+					$stockQty = 0;
+					//if($itemOpt->saleClass == "Rt"){ // Unknown
+						$itemStock = $this->checkItemStock($itemOpt->itemIndex); // Query Check Item Qty
+						$saleQTY = $itemOpt->saleQTY;
+						$stockQty = $itemStock - $itemOpt->saleQTY; // $item->stockQTY
+						$stmt = mysqli_prepare($this->connection, "UPDATE $this->table_item SET itemStock = ? WHERE itemIndex = ?"); // Update Item
+						mysqli_stmt_bind_param($stmt, 'ii', $stockQty, $itemOpt->itemIndex);
+						mysqli_stmt_execute($stmt);
+						mysqli_stmt_free_result($stmt);	
+						mysqli_stmt_close($stmt);
+			
+						$stmt = mysqli_prepare($this->connection, "UPDATE $this->table_salelist_opt SET stockQTY = ? WHERE itemIndex = ? AND saleNo = ?"); // Update SaleList
+						mysqli_stmt_bind_param($stmt, 'iis', $stockQty, $itemOpt->itemIndex, $saleNo);
+						mysqli_stmt_execute($stmt);
+						mysqli_stmt_free_result($stmt);	
+						mysqli_stmt_close($stmt);
+					//} 
+				} // END LOOP ITEM OPT ======================================================
+			}
+		
+		}
+		
+		// void Order Info
+		$stmt = mysqli_prepare($this->connection, "UPDATE $this->table_orderinfo SET paid_DTE=? WHERE saleNo=?");
+		$this->throwExceptionOnError();
+
+		mysqli_stmt_bind_param($stmt, 'ss', $saledetail->UPD_DTE->toString('YYYY-MM-dd HH:mm:ss'), $saleNo);
+		$this->throwExceptionOnError();
+
+		mysqli_stmt_execute($stmt);		
+		$this->throwExceptionOnError();
+
+		mysqli_stmt_free_result($stmt);
+		mysqli_stmt_close($stmt);
+		
+		// void SaleDetail
+		$stmt = mysqli_prepare($this->connection, "UPDATE $this->tablename 
+			SET saleDone=? , 
+			saleTotalAmount=? , 
+			saleTotalDiscount=? , 
+			saleTotalBalance=? 
+			WHERE saleNo=?");
+		$this->throwExceptionOnError();
+		
+		mysqli_stmt_bind_param($stmt, 'iidds', $saledetail->saleDone, $saledetail->saleTotalAmount, $saledetail->saleTotalDiscount, $saledetail->saleTotalBalance, $saleNo);
+		$this->throwExceptionOnError();
+
+		mysqli_stmt_execute($stmt);		
+		$this->throwExceptionOnError();
+
+		mysqli_stmt_free_result($stmt);
+		mysqli_stmt_close($stmt);
+
+		return 1;
+	}
 	/*************************************************************************************************
 	*   Reduce Function
 	*
@@ -1380,10 +1460,6 @@ class SaledetailService {
 		mysqli_stmt_close($stmt);
 		return $itemStock;
 	}
-	
-	
-	
-	
 	
 	
 	/*************************************************************************************************
