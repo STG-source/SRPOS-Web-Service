@@ -1351,7 +1351,87 @@ class SaledetailService {
 		
 		return 1;
 	}
-	
+
+	/**
+	 * updateBillPayment_nocash
+	 */
+	public function updateBillPayment_nocash($saledetail, $itemlist) {
+		$saleNo = $saledetail->saleNo;
+
+		foreach($itemlist as $item){
+			$itemStock = $this->checkItemStock($item->itemIndex); // Query Check Item Qty
+			$saleQTY = $item->saleQTY; 
+			$stockQty = $itemStock - $item->saleQTY; // $item->stockQTY
+			$stmt = mysqli_prepare($this->connection, "UPDATE $this->table_item SET itemStock = ? WHERE itemIndex = ?"); // Update Item
+			mysqli_stmt_bind_param($stmt, 'ii', $stockQty, $item->itemIndex);
+			mysqli_stmt_execute($stmt);
+			mysqli_stmt_free_result($stmt);	
+			mysqli_stmt_close($stmt);
+			
+			$stmt = mysqli_prepare($this->connection, "UPDATE $this->table_salelist SET stockQTY = ? WHERE itemIndex = ? AND saleNo = ?"); // Update SaleList
+			mysqli_stmt_bind_param($stmt, 'iis', $stockQty, $item->itemIndex, $saleNo);
+			mysqli_stmt_execute($stmt);
+			mysqli_stmt_free_result($stmt);	
+			mysqli_stmt_close($stmt);
+			
+			if(sizeof($item->itemOPT)){ // Check Item OPT
+				foreach($item->itemOPT as $itemOpt) // START LOOP ITEM OPT ======================
+				{
+					$stockQty = 0;
+					//if($itemOpt->saleClass == "Rt"){ // Unknown
+						$itemStock = $this->checkItemStock($itemOpt->itemIndex); // Query Check Item Qty
+						$saleQTY = $itemOpt->saleQTY;
+						$stockQty = $itemStock - $itemOpt->saleQTY; // $item->stockQTY
+						$stmt = mysqli_prepare($this->connection, "UPDATE $this->table_item SET itemStock = ? WHERE itemIndex = ?"); // Update Item
+						mysqli_stmt_bind_param($stmt, 'ii', $stockQty, $itemOpt->itemIndex);
+						mysqli_stmt_execute($stmt);
+						mysqli_stmt_free_result($stmt);	
+						mysqli_stmt_close($stmt);
+			
+						$stmt = mysqli_prepare($this->connection, "UPDATE $this->table_salelist_opt SET stockQTY = ? WHERE itemIndex = ? AND saleNo = ?"); // Update SaleList
+						mysqli_stmt_bind_param($stmt, 'iis', $stockQty, $itemOpt->itemIndex, $saleNo);
+						mysqli_stmt_execute($stmt);
+						mysqli_stmt_free_result($stmt);	
+						mysqli_stmt_close($stmt);
+					//} 
+				} // END LOOP ITEM OPT ======================================================
+			}
+		
+		}
+		
+		// void Order Info
+		$stmt = mysqli_prepare($this->connection, "UPDATE $this->table_orderinfo SET paid_DTE=? WHERE saleNo=?");
+		$this->throwExceptionOnError();
+
+		mysqli_stmt_bind_param($stmt, 'ss', $saledetail->UPD_DTE->toString('YYYY-MM-dd HH:mm:ss'), $saleNo);
+		$this->throwExceptionOnError();
+
+		mysqli_stmt_execute($stmt);		
+		$this->throwExceptionOnError();
+
+		mysqli_stmt_free_result($stmt);
+		mysqli_stmt_close($stmt);
+		
+		// void SaleDetail
+		$stmt = mysqli_prepare($this->connection, "UPDATE $this->tablename 
+			SET saleDone=? , 
+			saleTotalAmount=? , 
+			saleTotalDiscount=? , 
+			saleTotalBalance=? 
+			WHERE saleNo=?");
+		$this->throwExceptionOnError();
+		
+		mysqli_stmt_bind_param($stmt, 'iidds', $saledetail->saleDone, $saledetail->saleTotalAmount, $saledetail->saleTotalDiscount, $saledetail->saleTotalBalance, $saleNo);
+		$this->throwExceptionOnError();
+
+		mysqli_stmt_execute($stmt);		
+		$this->throwExceptionOnError();
+
+		mysqli_stmt_free_result($stmt);
+		mysqli_stmt_close($stmt);
+
+		return 1;
+	}
 	/*************************************************************************************************
 	*   Reduce Function
 	*
@@ -1380,10 +1460,6 @@ class SaledetailService {
 		mysqli_stmt_close($stmt);
 		return $itemStock;
 	}
-	
-	
-	
-	
 	
 	
 	/*************************************************************************************************
@@ -1922,6 +1998,108 @@ class SaledetailService {
 
 		//return $return_result;
 */
+
+		/** Customer Registration **/
+		 /** [TBC] Default Point Score Calculation **/
+		$pointScore = $saledetail->saleTotalBalance/100;
+		$customer_obj = new ScustomerService;
+		$customer_obj->setCustomerPoint($saledetail->customerIndex, $pointScore);
+
+		return $autoid_saledetail;
+	}
+
+	public function addSalelistTransition_nocash($saledetail, $itemlist) {
+		require_once 'ScustomerService.php';
+
+		$autoidlist = array();
+
+		foreach ($itemlist as $item) {
+			//***** Query Check Item Qty
+			$itemStock = 0;
+
+			$stmt = mysqli_prepare($this->connection, "SELECT itemStock FROM $this->table_item WHERE itemIndex = ? LIMIT 1");
+			$this->throwExceptionOnError();
+
+			mysqli_stmt_bind_param($stmt, "i", $item->billItemIndex);  // $item->itemIndex
+			$this->throwExceptionOnError();
+
+			mysqli_stmt_execute($stmt);
+			$this->throwExceptionOnError();
+
+			mysqli_stmt_bind_result($stmt, $col1);
+			$this->throwExceptionOnError();
+
+			mysqli_stmt_fetch($stmt);
+			$this->throwExceptionOnError();
+
+			$itemStock = $col1;
+			mysqli_stmt_free_result($stmt);
+			mysqli_stmt_close($stmt);
+
+			$saleQTY = $item->billItemQty; // $item->saleQTY
+			$stockQty = $itemStock - $item->billItemQty; // $item->stockQTY
+
+			//***** CreateSaleList
+			$stmt = mysqli_prepare($this->connection, "INSERT INTO $this->table_salelist (saleNo, itemIndex, salePrice, saleQTY, stockQTY, saleDiscount, saleClass, CRE_USR, CRE_DTE, UPD_USR, UPD_DTE, DEL_USR, DEL_DTE) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)");
+			$this->throwExceptionOnError();
+
+			$saleDiscount = 0.00; // $item->saleDiscount
+			mysqli_stmt_bind_param($stmt, 'siddddsssssss', $saledetail->saleNo, $item->billItemIndex, $item->billItemPrice, $item->billItemQty, $stockQty, $saleDiscount, $item->billSaleClass, $saledetail->CRE_USR, $saledetail->CRE_DTE->toString('YYYY-MM-dd HH:mm:ss'), $saledetail->UPD_USR, $saledetail->UPD_DTE->toString('YYYY-MM-dd HH:mm:ss'), $saledetail->DEL_USR, $saledetail->DEL_DTE->toString('YYYY-MM-dd HH:mm:ss'));
+			$this->throwExceptionOnError();
+
+			mysqli_stmt_execute($stmt);
+			$this->throwExceptionOnError();
+
+			$item_autoid = mysqli_stmt_insert_id($stmt);
+
+			array_push($autoidlist,$item_autoid);
+
+			mysqli_stmt_free_result($stmt);
+			mysqli_stmt_close($stmt);
+
+			//***** Update Item
+			$stmt = mysqli_prepare($this->connection, "UPDATE $this->table_item SET itemStock = ? WHERE itemIndex = ?");
+			$this->throwExceptionOnError();
+
+			mysqli_stmt_bind_param($stmt, 'ii', $stockQty, $item->billItemIndex);
+			$this->throwExceptionOnError();
+
+			mysqli_stmt_execute($stmt);
+			$this->throwExceptionOnError();
+
+			mysqli_stmt_free_result($stmt);
+			mysqli_stmt_close($stmt);
+		}
+
+		//***** CreateSaleDetail
+		$stmt = mysqli_prepare($this->connection, "INSERT INTO $this->tablename (saleIndex, saleNo, saleType, customerIndex, saleDone, creditCardID, approvalCode, saleTotalAmount, saleTotalDiscount, saleTotalBalance, creditCardAuthorizer, CRE_DTE, CRE_USR, UPD_DTE, UPD_USR, DEL_DTE, DEL_USR) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)");
+		$this->throwExceptionOnError();
+
+		$saleIndex = 0; //***** $saledetail->saleIndex
+
+		mysqli_stmt_bind_param($stmt, 'isiiissdddsssssss', $saleIndex, $saledetail->saleNo, $saledetail->saleType, $saledetail->customerIndex, $saledetail->saleDone, $saledetail->creditCardID, $saledetail->approvalCode, $saledetail->saleTotalAmount, $saledetail->saleTotalDiscount, $saledetail->saleTotalBalance, $saledetail->creditCardAuthorizer, $saledetail->CRE_DTE->toString('YYYY-MM-dd HH:mm:ss'), $saledetail->CRE_USR, $saledetail->UPD_DTE->toString('YYYY-MM-dd HH:mm:ss'), $saledetail->UPD_USR, $saledetail->DEL_DTE->toString('YYYY-MM-dd HH:mm:ss'), $saledetail->DEL_USR);
+		$this->throwExceptionOnError();
+
+		mysqli_stmt_execute($stmt);	
+		$this->throwExceptionOnError();
+
+		//$autoid = $saledetail->saleIndex;
+		$autoid_saledetail = mysqli_stmt_insert_id($stmt);
+
+		mysqli_stmt_free_result($stmt);
+		mysqli_stmt_close($stmt);
+
+		//***** Retrieve last rows from Till Monitor
+		if ($result = mysqli_query($this->connection, "SELECT drawerBalance FROM $this->table_monitor ORDER BY actionIndex DESC LIMIT 1")) {
+			if ($row = mysqli_fetch_row($result)) {
+				// $row[0]
+				$drawerBalance_old = $row[0];
+			}
+			// free result set
+			mysqli_free_result($result);
+		}
+
+		mysqli_close($this->connection);
 
 		/** Customer Registration **/
 		 /** [TBC] Default Point Score Calculation **/

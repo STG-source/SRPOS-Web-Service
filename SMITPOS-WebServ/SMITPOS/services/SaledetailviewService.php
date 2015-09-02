@@ -811,7 +811,7 @@ class SaledetailviewService {
 	{
 		$sql = "SELECT `j`.`actionIndex` as `actionIndex`, `j`.`drawerIndex` as `drawerIndex`, `j`.`actionType` as `actionType`, `j`.`actionAmount` as `actionAmount`, `j`.`drawerBalance` as `drawerBalance`, `j`.`CRE_DTE` as `CRE_DTE`, `j`.`CRE_USR` as `CRE_USR`, `s`.`userIndex` as `userIndex`, `s`.`fullname` as `fullname`, `s`.`myusername` as `myusername` FROM (_till_monitor `j` JOIN _myuser `s`) ";
 
-		$where = "WHERE (CONVERT_TZ(`j`.`CRE_DTE`, '+00:00', '+07:00') BETWEEN ? AND ?) AND (`j`.`CRE_USR` = `s`.`userID`) ";
+		$where = "WHERE ((CONVERT_TZ(`j`.`CRE_DTE`, '+00:00', '+07:00') BETWEEN ? AND ?) OR (CONVERT_TZ(`j`.`UPD_DTE`, '+00:00', '+07:00') BETWEEN ? AND ?)) AND (`j`.`CRE_USR` = `s`.`userID`) ";
 
 		if ($index > -1) {
 			$where .= " LIMIT {$index}, {$length} ";
@@ -822,7 +822,9 @@ class SaledetailviewService {
 		$stmt = mysqli_prepare($this->connection, $sql);
 		$this->throwExceptionOnError();
 
-		mysqli_stmt_bind_param($stmt, 'ss',
+		mysqli_stmt_bind_param($stmt, 'ssss',
+				$fromDate,
+				$endDate,
 				$fromDate,
 				$endDate);
 		mysqli_stmt_execute($stmt);
