@@ -114,6 +114,37 @@ class SccrrbaseService {
 	      return null;
 		}
 	}
+	
+	
+	/**
+	 * Returns Code Value.
+	 * 1 :: Create New Record
+	 * 2 :: Update Old Record
+	 * 3 :: Update Last Record of SaleNo
+	 * Add authorization or any logical checks for secure access to your data 
+	 *
+	 * Add at 05/09/2015
+	 */
+	public function createOrUpdate($item){
+		//check transection SaleNo ,count row of SaleNo
+		$reSult_Code = 0;
+		$count_SaleNo = $this->count_SaleNo($item->saleNo,0);
+		
+		if($count_SaleNo == 0){
+			$this->create_ccrr_base_own($item);
+			$reSult_Code = 1; // Create New Record
+		}else if($count_SaleNo == 1){
+			$this->update_ccrr_base($item);
+			$reSult_Code = 2; // Update Old Recode
+		}else{
+			// get Max ListIndex for Updaet Last Transection
+			$item->listIndex = $this->get_Max_listIndex($item->saleNo);
+			$this->update_ccrr_base($item); 
+			$reSult_Code = 3; // Update Last Record 
+		}
+		
+		return $reSult_Code;
+	}
 
 	/**
 	 * Returns the item corresponding to the value specified for the primary key.
@@ -191,6 +222,125 @@ class SccrrbaseService {
 		
 		mysqli_stmt_free_result($stmt);		
 		mysqli_close($this->connection);
+	}
+	
+	
+	
+	
+	/**
+	* Param 1 :: Sale No
+	* Param 2 :: CHECK_ROLL
+	 * Returns the number of SaleNo in the table.
+	 *
+	 *
+	 * Add at 05/09/2015
+	 */
+	public function count_SaleNo($SaleNo, $chkout_roll) {
+		$stmt = mysqli_prepare($this->connection, "SELECT COUNT(*) AS COUNT FROM $this->tablename WHERE saleNo = ? AND CHKOUT_ROLL = ?");
+		$this->throwExceptionOnError();
+
+		mysqli_stmt_bind_param($stmt, 'si', $SaleNo, $chkout_roll);
+		mysqli_stmt_execute($stmt);
+		$this->throwExceptionOnError();
+		
+		mysqli_stmt_bind_result($stmt, $rec_count);
+		$this->throwExceptionOnError();
+		
+		mysqli_stmt_fetch($stmt);
+		$this->throwExceptionOnError();
+		
+		mysqli_stmt_free_result($stmt);
+		//mysqli_close($this->connection);
+		
+		return $rec_count;
+	}
+	
+	
+	/**
+	 * Returns Max listIndex number of SaleNo in the table.
+	 *
+	 * 
+	 * Add at 05/09/2015
+	 */
+	public function get_Max_listIndex($SaleNo) {
+		
+		$stmt = mysqli_prepare($this->connection, "SELECT MAX(listIndex) AS MAX_Index FROM _ccrr_base WHERE saleNo = ? AND CHKOUT_ROLL = 0");
+		$this->throwExceptionOnError();
+		
+		mysqli_stmt_bind_param($stmt, 's', $SaleNo);		
+		$this->throwExceptionOnError();
+		
+		mysqli_stmt_execute($stmt);
+		$this->throwExceptionOnError();
+		
+		mysqli_stmt_bind_result($stmt, $rec_count);
+		$this->throwExceptionOnError();
+		
+		mysqli_stmt_fetch($stmt);
+		$this->throwExceptionOnError();
+		
+		mysqli_stmt_free_result($stmt);
+		//mysqli_close($this->connection);
+		
+		return $rec_count;
+		
+		
+	}
+	
+	/**
+	 * Return 0:: No Good
+	 * Return 1 :: OK
+	 *
+	 *
+	 * 
+	 */
+	public function checkOutAfterPayDone($ccrr_obj, $saleDetail, $saleList)
+	{
+		$result = 0;
+		require_once("../../SMITPOS/services/SaledetailService.php");
+		
+		$count_SaleNo = $this->count_SaleNo($item->saleNo,2); // check ว่ามีรายการที่ต้องอัพเดทไหม
+		if($count_SaleNo > 1 ){
+			// $saleDetail and $saleList is not null, update value
+			$cls_SaledetailService = new SaledetailService();
+			$cls_SaledetailService->addSalelistTransition($saleDetail,$saleList);
+
+			// disable wifi
+			$this->fncDisableWifi($item->saleNo);
+			
+			
+		}
+		// update ccrrBase object
+		$result_AddUpdate = $this->createOrUpdate($ccrr_obj);
+		if($result_AddUpdate != 3){
+			$result = 1;
+		}
+		
+		return $result;
+		
+	}
+	
+	/**
+	 * Disable Wifi by saleNo
+	 *
+	 * 
+	 */
+	private function fncDisableWifi($saleNo){
+		require_once("../../srpos_radius/services/RadcheckService.php");
+
+		$cls_RadcheckService = new 	RadcheckService();
+		
+		$max_ID = $cls_RadcheckService->get_Max_listIndex($saleNo);
+
+		if ($max_ID != 0){
+			$row = new stdClass();
+			$row->id = $max_ID;	
+			$row->username = $saleNo;
+			$row->attribute = "Expiration";
+			$row->op = ":=";
+			$row->value = "dead";
+			$cls_RadcheckService->updateRadcheck($row);
+		}
 	}
 
 
@@ -307,6 +457,8 @@ class SccrrbaseService {
 		
 		return $rows;
 	}
+	
+	
 }
 
 ?>
