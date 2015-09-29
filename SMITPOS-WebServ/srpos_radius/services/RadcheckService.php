@@ -46,6 +46,19 @@ class RadcheckService {
 		$this->throwExceptionOnError($this->connection);
 	}
 
+
+	private function ReConnect(){
+		$this->connection = mysqli_connect(
+	  							$this->server,  
+	  							$this->username,  
+	  							$this->password, 
+	  							$this->databasename,
+	  							$this->port
+	  						);
+
+		$this->throwExceptionOnError($this->connection);	
+	}
+
 	/**
 	 * Returns all the rows from the table.
 	 *
@@ -104,7 +117,136 @@ class RadcheckService {
 	      return null;
 		}
 	}
+	
+	/**
+	 * Returns the item corresponding to the value specified for the primary key.
+	 *
+	 * Add authorization or any logical checks for secure access to your data 
+	 *
+	 * 
+	 * @return stdClass
+	 */
+	public function getRadcheckBySaleNo($saleNo) {
+		$this->ReConnect();
+		$stmt = mysqli_prepare($this->connection, "SELECT * FROM $this->tablename WHERE username=?");		
+		$this->throwExceptionOnError();
+		
+		mysqli_stmt_bind_param($stmt, 's', $saleNo);		
+		$this->throwExceptionOnError();
+		
+		mysqli_stmt_execute($stmt);
+		$this->throwExceptionOnError();
+		
+		$rows = array();
+		
+		mysqli_stmt_bind_result($stmt, $row->id, $row->username, $row->attribute, $row->op, $row->value);
+		
+	    while (mysqli_stmt_fetch($stmt)) {
+	      $rows[] = $row;
+	      $row = new stdClass();
+	      mysqli_stmt_bind_result($stmt, $row->id, $row->username, $row->attribute, $row->op, $row->value);
+	    }
+		
+		mysqli_stmt_free_result($stmt);
+	    mysqli_close($this->connection);
+	
+	    return $rows;
+		
+	}
+	
+	
+	/*
+	* Return Code Number of Result
+	* 1 :: Create New Record
+	* 2 :: Update Old Record
+	* 3 :: Update Last Record of SaleNo
+	* Add at 05/09/2015
+	*/
+	public function createOrUpdate($item){
+		//check transection SaleNo ,count row of SaleNo
+		$c_num = $this->count_SaleNo($item[0]->username);
+		$c_set = $c_num / 3;
+		if($c_set == 0){
+			$this->createRadcheck($item[0]);
+			$this->createRadcheck($item[1]);
+			$this->createRadcheck($item[2]);
+			return 1;
+		}elseif($c_set == 1){
+			$this->updateRadcheck($item[0]);
+			$this->updateRadcheck($item[1]);
+			$this->updateRadcheck($item[2]);
+			return 2;
+		}else{
+			$max_ID = $this->get_Max_listIndex($item[0]->username);
+			$item[0]->id = $max_ID - 2;
+			$item[1]->id = $max_ID - 1;
+			$item[2]->id = $max_ID;
+			$this->updateRadcheck($item[0]);
+			$this->updateRadcheck($item[1]);
+			$this->updateRadcheck($item[2]);	
+			return 3;
+		}
+	}
+	
+	/**
+	 * Returns the number of SaleNo in the table.
+	 *
+	 *
+	 * Add at 05/09/2015
+	 */
+	public function count_SaleNo($SaleNo) {
+		$this->ReConnect();
+		$stmt = mysqli_prepare($this->connection, "SELECT COUNT(*) AS COUNT FROM $this->tablename WHERE username = ? ");
+		$this->throwExceptionOnError();
 
+		mysqli_stmt_bind_param($stmt, 's', $SaleNo);
+		mysqli_stmt_execute($stmt);
+		$this->throwExceptionOnError();
+		
+		mysqli_stmt_bind_result($stmt, $rec_count);
+		$this->throwExceptionOnError();
+		
+		mysqli_stmt_fetch($stmt);
+		$this->throwExceptionOnError();
+		
+		mysqli_stmt_free_result($stmt);
+		mysqli_close($this->connection);
+		
+		return $rec_count;
+	}
+	
+	/**
+	 * Returns Max listIndex number of SaleNo in the table.
+	 *
+	 * 
+	 * Add at 05/09/2015
+	 */
+	public function get_Max_listIndex($SaleNo) {
+		$this->ReConnect();
+		$stmt = mysqli_prepare($this->connection, "SELECT IFNULL(MAX(id),0) AS MAX_Index FROM radcheck WHERE username = ? ");
+		$this->throwExceptionOnError();
+		
+		mysqli_stmt_bind_param($stmt, 's', $SaleNo);		
+		$this->throwExceptionOnError();
+		
+		mysqli_stmt_execute($stmt);
+		$this->throwExceptionOnError();
+		
+		mysqli_stmt_bind_result($stmt, $rec_count);
+		$this->throwExceptionOnError();
+		
+		mysqli_stmt_fetch($stmt);
+		$this->throwExceptionOnError();
+		
+		mysqli_stmt_free_result($stmt);
+		mysqli_close($this->connection);
+		
+		return $rec_count;
+		
+		
+	}
+
+	
 	/**
 	 * Returns the item corresponding to the value specified for the primary key.
 	 *
@@ -133,7 +275,7 @@ class RadcheckService {
 	}
 	
 	public function createRadcheck_own($item) {
-
+		$this->ReConn();
 		$stmt = mysqli_prepare($this->connection, "INSERT INTO $this->tablename (username, attribute, op, value) VALUES (?, ?, ?, ?)");
 		$this->throwExceptionOnError();
 
@@ -160,7 +302,7 @@ class RadcheckService {
 	 * @return void
 	 */
 	public function updateRadcheck($item) {
-	
+		$this->ReConnect();
 		$stmt = mysqli_prepare($this->connection, "UPDATE $this->tablename SET username=?, attribute=?, op=?, value=? WHERE id=?");		
 		$this->throwExceptionOnError();
 		
