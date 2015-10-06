@@ -275,7 +275,6 @@ class RadcheckService {
 	}
 	
 	public function createRadcheck_own($item) {
-		$this->ReConn();
 		$stmt = mysqli_prepare($this->connection, "INSERT INTO $this->tablename (username, attribute, op, value) VALUES (?, ?, ?, ?)");
 		$this->throwExceptionOnError();
 
