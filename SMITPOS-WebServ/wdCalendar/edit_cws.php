@@ -1,8 +1,27 @@
+<?php
+include_once("php/dbconfig.php");
+include_once("php/functions.php");
+function getCalendarByRange($id){
+  try{
+    $db = new DBConnection();
+    $db->getConnection();
+    $sql = "select * from `jqcalendar` where `id` = " . $id;
+    $handle = mysql_query($sql);
+    //echo $sql;
+    $row = mysql_fetch_object($handle);
+	}catch(Exception $e){
+  }
+  return $row;
+}
+if($_GET["id"]){
+  $event = getCalendarByRange($_GET["id"]);
+}
+?>
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml">
 <head>
 <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
-<title>New Schedule Document</title>
+<title>New CWS Schedule Document</title>
 </head>
 
 <body>
