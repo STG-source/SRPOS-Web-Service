@@ -69,9 +69,9 @@
           <label>                    
             <span>                        Remark:
             </span>                    
-<textarea cols="20" id="Description" name="Description" rows="2" style="width:95%; height:70px">
-<?php echo isset($event)?$event->Description:""; ?>
-</textarea>                
+            <textarea cols="20" id="Description" name="Description" rows="2" style="width:95%; height:70px">
+            <?php echo isset($event)?$event->Description:""; ?>
+            </textarea>
           </label>                
           <input id="timezone" name="timezone" type="hidden" value="" />           
         </form>         
