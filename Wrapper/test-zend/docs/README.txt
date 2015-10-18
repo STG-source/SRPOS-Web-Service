@@ -14,13 +14,13 @@ Setting Up Your VHOST
 The following is a sample VHOST you might want to consider for your project.
 
 <VirtualHost *:80>
-   DocumentRoot "C:/Users/joe/Documents/SRPOS/srpos-web-service/Wrapper/test-zend/public"
+   DocumentRoot "C:/wamp/www/srpos-web-service/Wrapper/test-zend/public"
    ServerName .local
 
    # This should be omitted in the production environment
    SetEnv APPLICATION_ENV development
 
-   <Directory "C:/Users/joe/Documents/SRPOS/srpos-web-service/Wrapper/test-zend/public">
+   <Directory "C:/wamp/www/srpos-web-service/Wrapper/test-zend/public">
        Options Indexes MultiViews FollowSymLinks
        AllowOverride All
        Order allow,deny
