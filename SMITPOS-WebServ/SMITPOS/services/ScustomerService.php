@@ -797,6 +797,21 @@ class ScustomerService {
 		return $customerRow;
 	}
 
+	
+	public function myUp2($item) {
+	
+		$stmt = mysqli_prepare($this->connection, "UPDATE $this->tablename SET UPD_DTE=? WHERE customerIndex=?");		
+		$this->throwExceptionOnError();
+		
+		mysqli_stmt_bind_param($stmt, 'si', $item->UPD_DTE->toString('YYYY-MM-dd HH:mm:ss'), $item->customerIndex);		
+		$this->throwExceptionOnError();
+
+		mysqli_stmt_execute($stmt);		
+		$this->throwExceptionOnError();
+		
+		mysqli_stmt_free_result($stmt);		
+		mysqli_close($this->connection);
+	}
 }
 
 ?>
