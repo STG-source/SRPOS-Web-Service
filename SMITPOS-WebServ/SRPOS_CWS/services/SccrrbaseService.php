@@ -133,14 +133,15 @@ class SccrrbaseService {
 		if($count_SaleNo == 0){
 			$this->create_ccrr_base_own($item);
 			$reSult_Code = 1; // Create New Record
-		}else if($count_SaleNo == 1){
-			$this->update_ccrr_base($item);
-			$reSult_Code = 2; // Update Old Recode
 		}else{
+			if($count_SaleNo == 1){
+				$reSult_Code = 2; // Update Old Recode
+			}else{
+				$reSult_Code = 3; // Update Last Record 
+			}
 			// get Max ListIndex for Updaet Last Transection
 			$item->listIndex = $this->get_Max_listIndex($item->saleNo);
 			$this->update_ccrr_base($item); 
-			$reSult_Code = 3; // Update Last Record 
 		}
 		
 		return $reSult_Code;
@@ -297,7 +298,8 @@ class SccrrbaseService {
 	public function checkOutAfterPayDone($ccrr_obj, $saleDetail, $saleList)
 	{
 		$result = 0;
-		require_once("../../SMITPOS/services/SaledetailService.php");
+		//require_once("../../SMITPOS/services/SaledetailService.php");
+		require_once("http://192.168.1.210/SMITPOS/services/SaledetailService.php");
 		
 		$count_SaleNo = $this->count_SaleNo($item->saleNo,2); // check ว่ามีรายการที่ต้องอัพเดทไหม
 		if($count_SaleNo > 1 ){
@@ -326,7 +328,8 @@ class SccrrbaseService {
 	 * 
 	 */
 	private function fncDisableWifi($saleNo){
-		require_once("../../srpos_radius/services/RadcheckService.php");
+		//require_once("../../srpos_radius/services/RadcheckService.php");
+		require_once("http://192.168.1.200/srpos_radius/services/RadcheckService.php"); // Server
 
 		$cls_RadcheckService = new 	RadcheckService();
 		
