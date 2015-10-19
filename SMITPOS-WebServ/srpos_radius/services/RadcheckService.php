@@ -169,6 +169,7 @@ class RadcheckService {
 		$c_set = $c_num / 3;
 		if($c_set == 0){
 			// Create Record 1 :: User-Password
+			$this->ReConnect();
 			$record_1 = new stdClass();
 			$record_1->id = 0;	
 			$record_1->username = $item->userName;
@@ -177,6 +178,7 @@ class RadcheckService {
 			$record_1->value = $item->userPassWord;
 			$this->createRadcheck($record_1);
 			// Create Record 2 :: Max-All-Session
+			$this->ReConnect();
 			$record_2 = new stdClass();
 			$record_2->id = 0;	
 			$record_2->username = $item->userName;
@@ -185,6 +187,7 @@ class RadcheckService {
 			$record_2->value = $item->session;
 			$this->createRadcheck($record_2);
 			// Create Record 3 :: Expiration
+			$this->ReConnect();
 			$record_3 = new stdClass();
 			$record_3->id = 0;	
 			$record_3->username = $item->userName;
@@ -206,6 +209,7 @@ class RadcheckService {
 			$max_ID = $this->get_Max_listIndex($item->userName);
 
 			// Create Record 1 :: User-Password
+			$this->ReConnect();
 			$record_1 = new stdClass();
 			$record_1->id = $max_ID - 2;	
 			$record_1->username = $item->userName;
@@ -214,6 +218,7 @@ class RadcheckService {
 			$record_1->value = $item->userPassWord;
 			$this->updateRadcheck($record_1);
 			// Create Record 2 :: Max-All-Session
+			$this->ReConnect();
 			$record_2 = new stdClass();
 			$record_2->id = $max_ID - 1;	
 			$record_2->username = $item->userName;
@@ -222,6 +227,7 @@ class RadcheckService {
 			$record_2->value = $item->session;
 			$this->updateRadcheck($record_2);
 			// Create Record 3 :: Expiration
+			$this->ReConnect();
 			$record_3 = new stdClass();
 			$record_3->id = $max_ID;
 			$record_3->username = $item->userName;
