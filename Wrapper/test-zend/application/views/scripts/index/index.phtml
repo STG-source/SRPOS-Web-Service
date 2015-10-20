@@ -43,6 +43,13 @@
             <a href="http://framework.zend.com/">Zend Framework Website</a> |
             <a href="http://framework.zend.com/manual/en/">Zend Framework Manual</a>
         </p>
+
+	<?php
+		$date_za = new Zend_Date();
+		xdebug_start_trace();
+                var_dump($date_za);
+                xdebug_stop_trace();
+	?>
 		
 		<?php
 			require_once 'c:\wamp\www\smitpos\services\saledetailservice.php';
@@ -63,6 +70,10 @@
 			echo " >> " . $focus_customer->fullname . " :: " . $focus_customer->UPD_DTE->format('Y-m-d H:i:s');
 			
 			$focus_customer->UPD_DTE->setTime(14, 55);
+
+			xdebug_start_trace();
+			var_dump($focus_customer);
+			xdebug_stop_trace();
 			
 			echo "<p>Using Zend_Date \n momo</p>";
 			$date = new Zend_Date();
