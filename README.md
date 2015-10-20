@@ -11,6 +11,7 @@ This README would normally document whatever steps are necessary to get your app
 ### How do I get set up? ###
 
 * [Summary of set up](https://bitbucket.org/jeerapong/srpos-web-service/wiki/Summary%20of%20set%20up)
+* [Debugger]()
 * Configuration
 * Dependencies
 * Database configuration
