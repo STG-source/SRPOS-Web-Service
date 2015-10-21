@@ -1,23 +1,23 @@
-<html><body><h1>It's HACKED!</h1>
-<p>This is the default web page for this server.</p>
-<p>The web server software is running but no content has been added, yet.</p>
+<html><body>
+<p>This page is about to test the SRPOS Radius Grab Command on this server.</p>
+<!--
+The idea of this code I give the credit to you guys in below links who give the answer:
+http://stackoverflow.com/questions/19499891/php-post-to-another-server-then-return-the-other-servers-response
+http://stackoverflow.com/questions/6044941/php-send-post-request-then-read-xml-response
+-->
 
 <?php
-	echo "tABUCHET --> ";
-    print_r($_POST);
-	
+	// Below sequence of scripts I want to implement in Sccrrbase service.
+
 	//$url = URL_TO_RECEIVING_PHP;
 	$url = "http://192.168.1.200/srpos_radius/controllers/grabcmd.php";
 
-	//$PARAM1 = 12123;
-	//$PARAM2 = 55889;
-	// mean?? array ( 'PARAM1'=>$_POST['PARAM1'],
-    //    'PARAM2'=>$_POST['PARAM2']	);
-
 	$fields = array(
-			"vOVOL",
-			"BMS"
+		"wifiUser" => "",
+		"expiration" => "DEAD"
 	);
+
+	$fields["wifiUser"] = "C58100293";
 
 	$postvars='';
 	$sep='';
