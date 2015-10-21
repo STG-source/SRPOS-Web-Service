@@ -26,11 +26,30 @@ in table.</p>
 ? -->
 
 <?php // Main controller block to interface the service.
+	require_once("../services/RadcheckService.php");
+
 	$wifiUser = $_POST['wifiUser'];
 	$expiration = $_POST['expiration'];
 
-	//echo $wifiUser . " :=: " . $expiration;
+	if ($expiration != "DEAD") {
+		echo "KILL_NG";
+		return;
+	}
+
 	// Doing the task for set wifiUser expiration from here ...
-	// include_once ...
-	// if $expiration == "DEAD"
+	$cls_RadcheckService = new RadcheckService();
+
+	$max_ID = $cls_RadcheckService->get_Max_listIndex($wifiUser);
+	
+	if ($max_ID != 0){
+		$row = new stdClass();
+		$row->id = $max_ID;	
+		$row->username = $wifiUser;
+		$row->attribute = "Expiration";
+		$row->op = ":=";
+		$row->value = $expiration;
+		$cls_RadcheckService->updateRadcheck($row);
+	}
+
+	echo "KILL_OK";
 ?>
