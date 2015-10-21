@@ -97,7 +97,7 @@
 			}
 
 			echo "<p>";
-			$v_foo = new Foo();
+			$v_foo = new Foo(); // or = new stdClass();
 			$v_foo->customerIndex = $target_index;
 			var_dump($v_foo);
 			echo "do toString :: " . $v_foo->UPD_DTE->toString('YYYY-MM-dd HH:mm:ss');
