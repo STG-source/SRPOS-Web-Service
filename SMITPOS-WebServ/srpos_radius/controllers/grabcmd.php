@@ -32,7 +32,7 @@ in table.</p>
 	$expiration = $_POST['expiration'];
 
 	if ($expiration != "DEAD") {
-		echo "KILL_NG";
+		echo "KILL_IGNORE";
 		return;
 	}
 
