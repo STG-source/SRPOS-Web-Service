@@ -333,8 +333,8 @@ class SccrrbaseService {
 	private function fncDisableWifi($saleNo){
 
 		//$url = URL_TO_RECEIVING_PHP;
-		//$url = "http://192.168.1.200/srpos_radius/controllers/grabcmd.php";
-		$url = "http://localhost/srpos_radius/controllers/grabcmd.php";
+		$url = "http://192.168.1.200/srpos_radius/controllers/grabcmd.php";
+		//$url = "http://localhost/srpos_radius/controllers/grabcmd.php";
 
 		$fields = array(
 			"wifiUser" => "",
