@@ -68,7 +68,7 @@ class SitemunitService {
 		mysqli_stmt_execute($stmt);
 		$this->throwExceptionOnError();
 		
-		mysqli_stmt_bind_result($stmt, $row->itemUnitIndex, $row->unit, $row->CRE_DTE, $row->CRE_USR, $row->UPD_DTE, $row->UPD_USR, $row->DEL_DTE, $row->DEL_USR);
+		mysqli_stmt_bind_result($stmt, $row->itemUnitIndex, $row->unit, $row->CRE_DTE, $row->CRE_USR, $row->UPD_DTE, $row->UPD_USR, $row->DEL_DTE, $row->DEL_USR, $row->unitCategoryIndex, $row->referenceUnitIndex, $row->type, $row->ratio, $row->precision);
 		
 		if(mysqli_stmt_fetch($stmt)) {
 	      $row->CRE_DTE = new DateTime($row->CRE_DTE);
@@ -201,7 +201,7 @@ class SitemunitService {
 		
 		$rows = array();
 		
-		mysqli_stmt_bind_result($stmt, $row->itemUnitIndex, $row->unit, $row->CRE_DTE, $row->CRE_USR, $row->UPD_DTE, $row->UPD_USR, $row->DEL_DTE, $row->DEL_USR);
+		mysqli_stmt_bind_result($stmt, $row->itemUnitIndex, $row->unit, $row->CRE_DTE, $row->CRE_USR, $row->UPD_DTE, $row->UPD_USR, $row->DEL_DTE, $row->DEL_USR, $row->unitCategoryIndex, $row->referenceUnitIndex, $row->type, $row->ratio, $row->precision);
 		
 	    while (mysqli_stmt_fetch($stmt)) {
 	      $row->CRE_DTE = new DateTime($row->CRE_DTE);
@@ -209,7 +209,7 @@ class SitemunitService {
 	      $row->DEL_DTE = new DateTime($row->DEL_DTE);
 	      $rows[] = $row;
 	      $row = new stdClass();
-	      mysqli_stmt_bind_result($stmt, $row->itemUnitIndex, $row->unit, $row->CRE_DTE, $row->CRE_USR, $row->UPD_DTE, $row->UPD_USR, $row->DEL_DTE, $row->DEL_USR);
+	      mysqli_stmt_bind_result($stmt, $row->itemUnitIndex, $row->unit, $row->CRE_DTE, $row->CRE_USR, $row->UPD_DTE, $row->UPD_USR, $row->DEL_DTE, $row->DEL_USR, $row->unitCategoryIndex, $row->referenceUnitIndex, $row->type, $row->ratio, $row->precision);
 	    }
 		
 		mysqli_stmt_free_result($stmt);		
@@ -279,7 +279,7 @@ class SitemunitService {
 		
 		$rows = array();
 		
-		mysqli_stmt_bind_result($stmt, $row->itemUnitIndex, $row->unit, $row->CRE_DTE, $row->CRE_USR, $row->UPD_DTE, $row->UPD_USR, $row->DEL_DTE, $row->DEL_USR);
+		mysqli_stmt_bind_result($stmt, $row->itemUnitIndex, $row->unit, $row->CRE_DTE, $row->CRE_USR, $row->UPD_DTE, $row->UPD_USR, $row->DEL_DTE, $row->DEL_USR, $row->unitCategoryIndex, $row->referenceUnitIndex, $row->type, $row->ratio, $row->precision);
 		
 	    while (mysqli_stmt_fetch($stmt)) {
 	      $row->CRE_DTE = new DateTime($row->CRE_DTE);
@@ -287,12 +287,12 @@ class SitemunitService {
 	      $row->DEL_DTE = new DateTime($row->DEL_DTE);
 	      $rows[] = $row;
 	      $row = new stdClass();
-	      mysqli_stmt_bind_result($stmt, $row->itemUnitIndex, $row->unit, $row->CRE_DTE, $row->CRE_USR, $row->UPD_DTE, $row->UPD_USR, $row->DEL_DTE, $row->DEL_USR);
+	      mysqli_stmt_bind_result($stmt, $row->itemUnitIndex, $row->unit, $row->CRE_DTE, $row->CRE_USR, $row->UPD_DTE, $row->UPD_USR, $row->DEL_DTE, $row->DEL_USR, $row->unitCategoryIndex, $row->referenceUnitIndex, $row->type, $row->ratio, $row->precision);
 	    }
 		
 		mysqli_stmt_free_result($stmt);
 	    mysqli_close($this->connection);
-	
+
 	    return $rows;
 	}
 
@@ -307,7 +307,7 @@ class SitemunitService {
 		
 		$rows = array();
 		
-		mysqli_stmt_bind_result($stmt, $row->itemUnitIndex, $row->unit, $row->CRE_DTE, $row->CRE_USR, $row->UPD_DTE, $row->UPD_USR, $row->DEL_DTE, $row->DEL_USR);
+		mysqli_stmt_bind_result($stmt, $row->itemUnitIndex, $row->unit, $row->CRE_DTE, $row->CRE_USR, $row->UPD_DTE, $row->UPD_USR, $row->DEL_DTE, $row->DEL_USR, $row->unitCategoryIndex, $row->referenceUnitIndex, $row->type, $row->ratio, $row->precision);
 		
 		while (mysqli_stmt_fetch($stmt)) {
 	      $row->CRE_DTE = new DateTime($row->CRE_DTE);
@@ -315,7 +315,7 @@ class SitemunitService {
 	      $row->DEL_DTE = new DateTime($row->DEL_DTE);
 	      $rows[] = $row;
 	      $row = new stdClass();
-	      mysqli_stmt_bind_result($stmt, $row->itemUnitIndex, $row->unit, $row->CRE_DTE, $row->CRE_USR, $row->UPD_DTE, $row->UPD_USR, $row->DEL_DTE, $row->DEL_USR);
+	      mysqli_stmt_bind_result($stmt, $row->itemUnitIndex, $row->unit, $row->CRE_DTE, $row->CRE_USR, $row->UPD_DTE, $row->UPD_USR, $row->DEL_DTE, $row->DEL_USR, $row->unitCategoryIndex, $row->referenceUnitIndex, $row->type, $row->ratio, $row->precision);
 	    }
 
 		mysqli_stmt_free_result($stmt);		
@@ -362,5 +362,4 @@ class SitemunitService {
 
 
 }
-
 ?>
