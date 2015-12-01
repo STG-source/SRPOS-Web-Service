@@ -512,6 +512,45 @@ class ScustomerService {
 	      return null;
 		}
 	}
+	
+	
+	/**
+	 * Returns the item corresponding to the value specified for the primary key.
+	 *
+	 * Add authorization or any logical checks for secure access to your data 
+	 *
+	 * 
+	 * @return stdClass
+	 */
+	public function get_customerByCustomerID($CustomerID) {
+
+		$stmt = mysqli_prepare($this->connection, "SELECT * FROM $this->tablename where customerID=?");
+		$this->throwExceptionOnError();
+		
+		mysqli_stmt_bind_param($stmt, 's', $CustomerID);		
+		$this->throwExceptionOnError();
+		
+		mysqli_stmt_execute($stmt);
+		$this->throwExceptionOnError();
+		
+		mysqli_stmt_bind_result($stmt, $row->customerIndex, $row->customerID,
+		$row->fullname, 
+		$row->address, $row->city, $row->province, $row->postcode, 
+		$row->phone, $row->email, 
+		$row->customerClass, $row->customerType, $row->customerAVP, $row->customerPoint, 
+		$row->citizenID, $row->passportID, $row->title,
+		$row->cellPhone, $row->fax,
+		$row->CRE_DTE, $row->CRE_USR, $row->UPD_DTE, $row->UPD_USR, $row->DEL_DTE, $row->DEL_USR);
+		
+		if(mysqli_stmt_fetch($stmt)) {
+	      $row->CRE_DTE = new DateTime($row->CRE_DTE);
+	      $row->UPD_DTE = new DateTime($row->UPD_DTE);
+	      $row->DEL_DTE = new DateTime($row->DEL_DTE);
+	      return $row;
+		} else {
+	      return null;
+		}
+	}
 
 	/**
 	 * Returns the item corresponding to the value specified for the primary key.
@@ -759,6 +798,41 @@ class ScustomerService {
 		mysqli_close($this->connection);
 		
 		return $rows;
+	}
+	
+	
+	public function get_customerIDByCitizenID($CitizenID){
+		
+		$customerID = null;
+		
+		// get Customer Data
+		$searchCause = "SELECT customerID FROM $this->tablename WHERE citizenID = '".$CitizenID."'";	
+
+		$stmt = mysqli_prepare($this->connection, $searchCause);
+		$this->throwExceptionOnError();		
+		
+		mysqli_stmt_execute($stmt);
+		$this->throwExceptionOnError();
+		
+		/* store result */
+    	mysqli_stmt_store_result($stmt);
+	
+		$num_rows = mysqli_stmt_num_rows($stmt);
+		
+		//echo $num_rows;
+		
+		if($num_rows == 0){
+			$customerID = null;
+		}elseif($num_rows == 1){
+			mysqli_stmt_bind_result($stmt,$customerID);
+			$this->throwExceptionOnError();
+			
+			mysqli_stmt_fetch($stmt);
+			$this->throwExceptionOnError();
+			
+		}
+				
+		return $customerID;		
 	}
 	
 	
