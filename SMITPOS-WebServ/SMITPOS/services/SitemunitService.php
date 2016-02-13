@@ -415,6 +415,7 @@ class SitemunitService {
 	}
 
 	public function create_itemunit_uom_search($itemUnit) {
+
 		$stmt = mysqli_prepare($this->connection, "INSERT INTO $this->tablename (unit, CRE_DTE, CRE_USR, UPD_DTE, UPD_USR, DEL_DTE, DEL_USR, ratio, unitCategoryIndex, referenceUnitIndex, type, `precision`) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)");
 		$this->throwExceptionOnError();
 		/** Seems like precision is the reserved word we have to put it in quote **/
