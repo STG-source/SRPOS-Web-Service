@@ -117,6 +117,32 @@ class SitemService {
 		}
 	}
 
+
+	public function getSKU_item($refItem) {
+
+		$stmt = mysqli_prepare($this->connection, "SELECT * FROM `_itemsku` WHERE `_itemsku`.`referenceUnitIndex` = $refItem->itemUnitIndex AND `itemID` LIKE '%$refItem->itemID%'");
+		$this->throwExceptionOnError();
+
+		mysqli_stmt_execute($stmt);
+		$this->throwExceptionOnError();
+
+		$rows = array();
+
+		mysqli_stmt_bind_result($stmt, $row->itemIndex, $row->itemID, $row->itembarcodeID, $row->itemName, $row->itemDetail, $row->SKUPrice, $row->itemCatagoryIndex, $row->itemUnitIndex, $row->itemSizeIndex, $row->unit, $row->unitCategoryIndex, $row->referenceUnitIndex, $row->type, $row->ratio, $row->precision);
+
+	    while (mysqli_stmt_fetch($stmt)) {
+	      $rows[] = $row;
+	      $row = new stdClass();
+		  mysqli_stmt_bind_result($stmt, $row->itemIndex, $row->itemID, $row->itembarcodeID, $row->itemName, $row->itemDetail, $row->SKUPrice, $row->itemCatagoryIndex, $row->itemUnitIndex, $row->itemSizeIndex, $row->unit, $row->unitCategoryIndex, $row->referenceUnitIndex, $row->type, $row->ratio, $row->precision);
+	    }
+
+		mysqli_stmt_free_result($stmt);
+	    mysqli_close($this->connection);
+
+	    return $rows;
+	}
+
+
 	/**
 	 * Returns the item corresponding to the value specified for the primary key.
 	 *
