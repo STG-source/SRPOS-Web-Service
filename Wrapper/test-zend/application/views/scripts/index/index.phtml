@@ -1,0 +1,111 @@
+<head>
+	<meta http-equiv="Content-Type" content="text/html;charset=UTF-8">
+</head>
+<style>
+    a:link,
+    a:visited
+    {
+        color: #0398CA;
+    }
+
+    span#zf-name
+    {
+        color: #91BE3F;
+    }
+
+    div#welcome
+    {
+        color: #FFFFFF;
+        background-image: url(http://framework.zend.com/images/bkg_header.jpg);
+        width:  600px;
+        /* height: 400px; */
+		height: 100%;
+        border: 2px solid #444444;
+        overflow: hidden;
+        text-align: center;
+    }
+
+    div#more-information
+    {
+        background-image: url(http://framework.zend.com/images/bkg_body-bottom.gif);
+        height: 100%;
+    }
+</style>
+<div id="welcome">
+    <h1>Welcome to the <span id="zf-name">Zend Framework!</span></h1>
+
+    <h3>This is your project's main page</h3>
+
+    <div id="more-information">
+        <p><img src="http://framework.zend.com/images/PoweredBy_ZF_4LightBG.png" /></p>
+        <p>
+            Helpful Links: <br />
+            <a href="http://framework.zend.com/">Zend Framework Website</a> |
+            <a href="http://framework.zend.com/manual/en/">Zend Framework Manual</a>
+        </p>
+
+	<?php
+		$date_za = new Zend_Date();
+		xdebug_start_trace();
+                var_dump($date_za);
+                xdebug_stop_trace();
+	?>
+		
+		<?php
+			require_once 'c:\wamp\www\smitpos\services\saledetailservice.php';
+			require_once 'c:\wamp\www\smitpos\services\ScustomerService.php';
+			//NG!! require_once '/c/wamp/www/smitpos/services/ScustomerService.php';
+
+			$saledet_obj = new SaledetailService;
+			$customer_obj = new ScustomerService;
+			$target_index = 61;
+			$focus_customer = $customer_obj->get_customerByID($target_index);
+		
+			// Prints: July 1, 2000 is on a Saturday
+			echo "<p>";
+			echo "July 1, 2000 is on a " . date("l", mktime(0, 0, 0, 7, 1, 2000));
+			echo "</p>";
+			
+			echo $saledet_obj->testStubucy();
+			echo " >> " . $focus_customer->fullname . " :: " . $focus_customer->UPD_DTE->format('Y-m-d H:i:s');
+			
+			$focus_customer->UPD_DTE->setTime(14, 55);
+
+			xdebug_start_trace();
+			var_dump($focus_customer);
+			xdebug_stop_trace();
+			
+			echo "<p>Using Zend_Date \n momo</p>";
+			$date = new Zend_Date();
+
+			// Output of the current timestamp
+			print $date;
+
+			//$focus_customer->UPD_DTE = (Zend_Date) $focus_customer->UPD_DTE;
+			echo "\n new UPD_DTE --> " . get_class($focus_customer->UPD_DTE);
+			
+			class Foo
+			{
+				public $customerIndex;
+				public $UPD_DTE;
+
+				public function __construct()
+				{
+					$this->customerIndex = 60;
+					$this->UPD_DTE = new Zend_Date();
+				}
+			}
+
+			echo "<p>";
+			$v_foo = new Foo(); // or = new stdClass();
+			$v_foo->customerIndex = $target_index;
+			var_dump($v_foo);
+			echo "do toString :: " . $v_foo->UPD_DTE->toString('YYYY-MM-dd HH:mm:ss');
+			echo "</p>";
+
+			//$customer_obj->update_customer($focus_customer);
+			$customer_obj->myUp2($v_foo);
+		?>
+
+    </div>
+</div>
