@@ -1891,8 +1891,9 @@ class SaledetailService {
 			mysqli_stmt_free_result($stmt);
 			mysqli_stmt_close($stmt);
 
-			$saleQTY = $item->billItemQty; // $item->saleQTY
-			$stockQty = $itemStock - $item->billItemQty; // $item->stockQTY
+			/** WORKAROUND SSF-25 **/
+			$saleQTY = floatval(str_replace(',', '', $item->billItemQty)); // $item->saleQTY
+			$stockQty = $itemStock - $saleQTY; // $item->stockQTY
 
 			//***** CreateSaleList
 			$stmt = mysqli_prepare($this->connection, "INSERT INTO $this->table_salelist (saleNo, itemIndex, salePrice, saleQTY, stockQTY, saleDiscount, saleClass, CRE_USR, CRE_DTE, UPD_USR, UPD_DTE, DEL_USR, DEL_DTE) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)");
@@ -1902,7 +1903,7 @@ class SaledetailService {
 			$billItemPrice = floatval(str_replace(',', '', $item->billItemPrice));
 
 			$saleDiscount = 0.00; // $item->saleDiscount
-			mysqli_stmt_bind_param($stmt, 'siddddsssssss', $saledetail->saleNo, $item->billItemIndex, $billItemPrice, $item->billItemQty, $stockQty, $saleDiscount, $item->billSaleClass, $saledetail->CRE_USR, $saledetail->CRE_DTE->toString('YYYY-MM-dd HH:mm:ss'), $saledetail->UPD_USR, $saledetail->UPD_DTE->toString('YYYY-MM-dd HH:mm:ss'), $saledetail->DEL_USR, $saledetail->DEL_DTE->toString('YYYY-MM-dd HH:mm:ss'));
+			mysqli_stmt_bind_param($stmt, 'siddddsssssss', $saledetail->saleNo, $item->billItemIndex, $billItemPrice, $saleQTY, $stockQty, $saleDiscount, $item->billSaleClass, $saledetail->CRE_USR, $saledetail->CRE_DTE->toString('YYYY-MM-dd HH:mm:ss'), $saledetail->UPD_USR, $saledetail->UPD_DTE->toString('YYYY-MM-dd HH:mm:ss'), $saledetail->DEL_USR, $saledetail->DEL_DTE->toString('YYYY-MM-dd HH:mm:ss'));
 			$this->throwExceptionOnError();
 
 			mysqli_stmt_execute($stmt);
