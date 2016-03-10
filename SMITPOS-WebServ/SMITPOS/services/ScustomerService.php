@@ -256,6 +256,7 @@ class ScustomerService {
 						WHERE saleDone = 0 
 						GROUP BY customerIndex
 					)  c  ON  c.customerIndex  = a.customerIndex  
+					WHERE DEL_USR IS NULL
 					".$limit;
 					
 					
