@@ -943,6 +943,7 @@ class SitemService {
 		`tb_i`.`itemName`,
 		IFNULL(`tb_startQTY`.`startStock`,0) as 'startStock',
 		IFNULL(`tb_in_sum`.`sum_inQTY`,0) as 'sum_inQTY',
+		IFNULL(`tb_mov_sum`.`sum_moveQTY`,0) as 'sum_moveQTY',
 		IFNULL(`tb_sl_sum`.`sum_saleQTY`,0) as 'sum_saleQTY',
 		IFNULL(`tb_move`.`stockQTY`,0) as 'remainQTY'
 		FROM  
@@ -1007,6 +1008,7 @@ class SitemService {
 		$row->itemName,
 		$row->startQTY,
 		$row->sum_inQTY,
+		$row->sum_moveQTY,
 		$row->sum_saleQTY,
 		$row->remainQTY
 		);
@@ -1021,6 +1023,7 @@ class SitemService {
 			$row->itemName,
 			$row->startQTY,
 			$row->sum_inQTY,
+			$row->sum_moveQTY,
 			$row->sum_saleQTY,
 			$row->remainQTY
 		);
