@@ -89,7 +89,7 @@ class ItemmovementviewService {
 	 */
 	public function getMovement_byItemIndex($itemIndex) {
 
-		$stmt = mysqli_prepare($this->connection, "SELECT * FROM $this->tablename where itemIndex=?");		
+		$stmt = mysqli_prepare($this->connection, "SELECT * FROM $this->tablename where itemIndex=? order by CRE_DTE");
 		$this->throwExceptionOnError();
 		
 		mysqli_stmt_bind_param($stmt, 'i', $itemIndex);
@@ -132,7 +132,7 @@ class ItemmovementviewService {
 	 */
 	public function getItemmovementviewByID($itemID) {
 		
-		$stmt = mysqli_prepare($this->connection, "SELECT * FROM $this->tablename where itemID=?");
+		$stmt = mysqli_prepare($this->connection, "SELECT * FROM $this->tablename where itemID=? order by CRE_DTE");
 		$this->throwExceptionOnError();
 		
 		mysqli_stmt_bind_param($stmt, 'i', $itemID);		
