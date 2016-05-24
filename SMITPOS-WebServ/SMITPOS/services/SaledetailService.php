@@ -2019,6 +2019,42 @@ class SaledetailService {
 
 		return $autoid_saledetail;
 	}
+	
+	/**
+	* No duplicated transaction, Prevent SSF-63 UI-Bouncing Problem
+	*
+	*
+	*
+	*/
+	public function addSalelistTransition_own_distinct($saledetail, $itemlist) {
+		
+		// Check if same data exist
+		
+		$stmt = mysqli_prepare($this->connection, "SELECT saleIndex FROM $this->tablename WHERE saleNo = ? LIMIT 1");
+			$this->throwExceptionOnError();
+
+			mysqli_stmt_bind_param($stmt, "s", $saledetail->saleNo);  // $item->itemIndex
+			$this->throwExceptionOnError();
+
+			mysqli_stmt_execute($stmt);
+			$this->throwExceptionOnError();
+
+			mysqli_stmt_bind_result($stmt, $result);
+			$this->throwExceptionOnError();
+
+			mysqli_stmt_fetch($stmt);
+			$this->throwExceptionOnError();
+
+			mysqli_stmt_free_result($stmt);
+			mysqli_stmt_close($stmt);
+		
+		if($result == 0){
+			return $this->addSalelistTransition_own($saledetail, $itemlist);
+		}
+		else{
+			return $result;
+		}
+	}
 
 	public function addSalelistTransition_nocash($saledetail, $itemlist) {
 		require_once 'ScustomerService.php';
@@ -2118,6 +2154,38 @@ class SaledetailService {
 		$pointScore = $saledetail->saleTotalBalance/100;
 		$customer_obj = new ScustomerService;
 		$customer_obj->setCustomerPoint($saledetail->customerIndex, $pointScore);
+
+		return $autoid_saledetail;
+	}
+	
+	public function addSalelistTransition_nocash_distinct($saledetail, $itemlist) {
+
+		// Check if same data exist
+		
+		$stmt = mysqli_prepare($this->connection, "SELECT saleIndex FROM $this->tablename WHERE saleNo = ? LIMIT 1");
+			$this->throwExceptionOnError();
+
+			mysqli_stmt_bind_param($stmt, "s", $saledetail->saleNo);  // $item->itemIndex
+			$this->throwExceptionOnError();
+
+			mysqli_stmt_execute($stmt);
+			$this->throwExceptionOnError();
+
+			mysqli_stmt_bind_result($stmt, $result);
+			$this->throwExceptionOnError();
+
+			mysqli_stmt_fetch($stmt);
+			$this->throwExceptionOnError();
+
+			mysqli_stmt_free_result($stmt);
+			mysqli_stmt_close($stmt);
+		
+		if($result == 0){
+			return $this->addSalelistTransition_nocash($saledetail, $itemlist);
+		}
+		else{
+			return $result;
+		}
 
 		return $autoid_saledetail;
 	}
