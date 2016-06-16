@@ -66,7 +66,7 @@ class ItemmovementviewService {
 		$rows = array();
 		
 		mysqli_stmt_bind_result($stmt, $row->itemIndex, $row->itemID, $row->actionType, $row->QTY, $row->stockQTY, $row->CRE_DTE);
-		
+
 	    while (mysqli_stmt_fetch($stmt)) {
 	      $row->CRE_DTE = new DateTime($row->CRE_DTE);
 	      $rows[] = $row;
@@ -89,19 +89,19 @@ class ItemmovementviewService {
 	 */
 	public function getMovement_byItemIndex($itemIndex) {
 
-		$stmt = mysqli_prepare($this->connection, "SELECT * FROM $this->tablename where itemIndex=?");		
+		$stmt = mysqli_prepare($this->connection, "SELECT * FROM $this->tablename where itemIndex=? order by CRE_DTE");
 		$this->throwExceptionOnError();
-		
+
 		mysqli_stmt_bind_param($stmt, 'i', $itemIndex);
 		$this->throwExceptionOnError();
-		
+
 		mysqli_stmt_execute($stmt);
 		$this->throwExceptionOnError();
-		
+
 		$rows = array();
-		
+
 		mysqli_stmt_bind_result($stmt, $row->itemIndex, $row->itemID, $row->actionType, $row->QTY, $row->stockQTY, $row->CRE_DTE);
-		
+
 	    while (mysqli_stmt_fetch($stmt)) {
 	      $row->CRE_DTE = new DateTime($row->CRE_DTE);
 	      $rows[] = $row;
@@ -132,7 +132,7 @@ class ItemmovementviewService {
 	 */
 	public function getItemmovementviewByID($itemID) {
 		
-		$stmt = mysqli_prepare($this->connection, "SELECT * FROM $this->tablename where itemID=?");
+		$stmt = mysqli_prepare($this->connection, "SELECT * FROM $this->tablename where itemID=? order by CRE_DTE");
 		$this->throwExceptionOnError();
 		
 		mysqli_stmt_bind_param($stmt, 'i', $itemID);		
