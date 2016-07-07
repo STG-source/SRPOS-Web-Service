@@ -885,37 +885,41 @@ class SaledetailService {
 					else if($itemOpt->saleClass == "Fl"){
 						// Query Check Item Qty
 						$itemStock = 0;
-						$flavorID = null;
 						$quantity = 0;
 
 						/*
 						*
 						* check flavor before update stockQTY
-						*
+						* Beware this hard code $itemOpt->itemIndex and flavorID
 						*/
 						if($itemOpt->name === '0gS')
 						{
 							$flavorID = 990000;
+							$itemOpt->itemIndex = 229;
 							$quantity = 1;
 						}
 						else if($itemOpt->name === '15gS')
 						{
 							$flavorID = 990001;
+							$itemOpt->itemIndex = 230;
 							$quantity = 1;
 						}
 						else if($itemOpt->name === '30gS')
 						{
 							$flavorID = 990002;
+							$itemOpt->itemIndex = 231;
 							$quantity = 1;
 						}
 						else if($itemOpt->name === '45gS')
 						{
 							$flavorID = 990003;
+							$itemOpt->itemIndex = 232;
 							$quantity = 1;
 						}
 						else if($itemOpt->name === '60gS')
 						{
 							$flavorID = 990004;
+							$itemOpt->itemIndex = 233;
 							$quantity = 1;
 						} // End of Syrup Topping
 
@@ -961,6 +965,7 @@ class SaledetailService {
 							mysqli_stmt_free_result($stmt);
 
 							mysqli_stmt_close($stmt);
+
 						}
 					}
 
