@@ -1137,6 +1137,55 @@ class SitemService {
 		mysqli_close($this->connection);
 		return $rows;
 	}
+
+	public function get_ToppingReportUsedRangeDate($beforeDate,$afterDate){
+		$stmt = mysqli_prepare($this->connection,
+		"SELECT
+			IFNULL(`i`.`itemName`,`s_o`.`name`) as `toppingName`
+			, sum(`s_o`.`saleQTY`) as `total_used`
+			,`s_o`.`saleClass`
+			,`s_o`.`itemIndex`
+			FROM `salelist_opt` as `s_o`
+			left join `_item` as `i`
+			on `s_o`.`itemIndex` = `i`.`itemIndex`
+			where DATE(`s_o`.`CRE_DTE`) between date('$beforeDate') AND date('$afterDate')
+			group by `toppingName`
+			;"
+		);
+		$this->throwExceptionOnError();
+
+		// Execute SQL stmt
+		mysqli_stmt_execute($stmt);
+		$this->throwExceptionOnError();
+
+		// Empty array
+		$rows = array();
+
+		// Bind Data
+		mysqli_stmt_bind_result($stmt
+			, $row->toppingName
+			, $row->total_used
+			, $row->saleClass
+			, $row->itemIndex
+		);
+
+		// Retrive Data
+		while(mysqli_stmt_fetch($stmt)){
+			$rows[] = $row;
+			$row = new stdClass(); // Empty object of Dynamic class
+
+			mysqli_stmt_bind_result($stmt
+				, $row->toppingName
+				, $row->total_used
+				, $row->saleClass
+				, $row->itemIndex
+			);
+		}
+
+		mysqli_stmt_free_result($stmt);
+		mysqli_close($this->connection);
+		return $rows;
+	}
 }
 
 ?>
