@@ -1248,17 +1248,15 @@ class SitemService {
 
 	public function get_flavorReportUsedRangeDate($beforeDate,$afterDate){
 		$stmt = mysqli_prepare($this->connection,
-		"	SELECT (@row_number:=@row_number + 1) as `rowNumber`
-			,`s_o`.`name` as `flavorName`
+		"	SELECT `s_o`.`name` as `flavorName`
 			, sum(`s_o`.`saleQTY`) as `total_used`
 			,`s_o`.`saleClass`
 			,`s_o`.`itemIndex`
 			FROM `salelist_opt` as `s_o`
-			cross join (select @row_number:=0) as s
 			where DATE(`s_o`.`CRE_DTE`) between date('$beforeDate') AND date('$afterDate')
 			and `saleClass` = 'Fl'
 			group by `flavorName`
-			order by `rowNumber`
+			order by `flavorName`
 			;"
 		);
 		$this->throwExceptionOnError();
@@ -1272,7 +1270,6 @@ class SitemService {
 
 		// Bind Data
 		mysqli_stmt_bind_result($stmt
-			, $row->rowNumber
 			, $row->flavorName
 			, $row->total_used
 			, $row->saleClass
@@ -1285,7 +1282,6 @@ class SitemService {
 			$row = new stdClass(); // Empty object of Dynamic class
 
 			mysqli_stmt_bind_result($stmt
-				, $row->rowNumber
 				, $row->flavorName
 				, $row->total_used
 				, $row->saleClass
