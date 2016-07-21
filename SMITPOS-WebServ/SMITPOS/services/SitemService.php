@@ -957,7 +957,11 @@ class SitemService {
 			FROM `salelist` as sl
 						WHERE DATE(`sl`.`CRE_DTE`) BETWEEN DATE('$beforeDate') AND DATE('$afterDate')
 						GROUP BY `sl`.`itemIndex`
-						) AS tb_sl_sum ON `tb_sl_sum`.`itemIndex` = `tb_i`.`itemIndex`
+			UNION ALL SELECT `sl_o`.`itemIndex`, SUM(`sl_o`.`saleQTY`) as 'sum_saleQTY'
+			FROM `salelist_opt` as sl_o
+						WHERE DATE(`sl_o`.`CRE_DTE`) BETWEEN DATE('$beforeDate') AND DATE('$afterDate')
+				GROUP BY `sl_o`.`itemIndex`
+				) AS tb_sl_sum ON `tb_sl_sum`.`itemIndex` = `tb_i`.`itemIndex`
 		LEFT JOIN ( SELECT `in_mov`.`itemIndex`, SUM(`in_mov`.`moveQTY`) as 'sum_moveQTY'
 			FROM `inventorymove` as in_mov
 						WHERE DATE(`in_mov`.`CRE_DTE`) BETWEEN DATE('$beforeDate') AND DATE('$afterDate')
@@ -1138,18 +1142,19 @@ class SitemService {
 		return $rows;
 	}
 
-	public function get_ToppingReportUsedRangeDate($beforeDate,$afterDate){
+	public function get_flavorReportUsedRangeDate($beforeDate,$afterDate){
 		$stmt = mysqli_prepare($this->connection,
-		"SELECT
-			IFNULL(`i`.`itemName`,`s_o`.`name`) as `toppingName`
+		"	SELECT (@row_number:=@row_number + 1) as `rowNumber`
+			,`s_o`.`name` as `flavorName`
 			, sum(`s_o`.`saleQTY`) as `total_used`
 			,`s_o`.`saleClass`
 			,`s_o`.`itemIndex`
 			FROM `salelist_opt` as `s_o`
-			left join `_item` as `i`
-			on `s_o`.`itemIndex` = `i`.`itemIndex`
+			cross join (select @row_number:=0) as s
 			where DATE(`s_o`.`CRE_DTE`) between date('$beforeDate') AND date('$afterDate')
-			group by `toppingName`
+			and `saleClass` = 'Fl'
+			group by `flavorName`
+			order by `rowNumber`
 			;"
 		);
 		$this->throwExceptionOnError();
@@ -1163,7 +1168,8 @@ class SitemService {
 
 		// Bind Data
 		mysqli_stmt_bind_result($stmt
-			, $row->toppingName
+			, $row->rowNumber
+			, $row->flavorName
 			, $row->total_used
 			, $row->saleClass
 			, $row->itemIndex
@@ -1175,7 +1181,8 @@ class SitemService {
 			$row = new stdClass(); // Empty object of Dynamic class
 
 			mysqli_stmt_bind_result($stmt
-				, $row->toppingName
+				, $row->rowNumber
+				, $row->flavorName
 				, $row->total_used
 				, $row->saleClass
 				, $row->itemIndex
