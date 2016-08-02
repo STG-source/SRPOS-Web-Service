@@ -27,6 +27,8 @@ class SitemService {
 	var $databasename = "stechschema";
 	var $tablename = "_item";
 
+	var $table_salelist_opt = "salelist_opt";
+
 	var $connection;
 
 	/**
@@ -59,14 +61,14 @@ class SitemService {
 
 		$stmt = mysqli_prepare($this->connection, "SELECT * FROM $this->tablename");		
 		$this->throwExceptionOnError();
-		
+
 		mysqli_stmt_execute($stmt);
 		$this->throwExceptionOnError();
-		
+
 		$rows = array();
-		
+
 		mysqli_stmt_bind_result($stmt, $row->itemIndex, $row->itemID, $row->itembarcodeID, $row->itemName, $row->itemDetail, $row->itemPrice, $row->itemLatestCost, $row->itemStock, $row->itemProPoint, $row->itemProStart, $row->itemProEnd, $row->CRE_DTE, $row->CRE_USR, $row->UPD_DTE, $row->UPD_USR, $row->DEL_DTE, $row->DEL_USR, $row->itemCatagoryIndex, $row->itemUnitIndex, $row->itemSizeIndex, $row->itemLocationIndex);
-		
+
 	    while (mysqli_stmt_fetch($stmt)) {
 	      $row->itemProStart = new DateTime($row->itemProStart);
 	      $row->itemProEnd = new DateTime($row->itemProEnd);
@@ -77,10 +79,10 @@ class SitemService {
 	      $row = new stdClass();
 	      mysqli_stmt_bind_result($stmt, $row->itemIndex, $row->itemID, $row->itembarcodeID, $row->itemName, $row->itemDetail, $row->itemPrice, $row->itemLatestCost, $row->itemStock, $row->itemProPoint, $row->itemProStart, $row->itemProEnd, $row->CRE_DTE, $row->CRE_USR, $row->UPD_DTE, $row->UPD_USR, $row->DEL_DTE, $row->DEL_USR, $row->itemCatagoryIndex, $row->itemUnitIndex, $row->itemSizeIndex, $row->itemLocationIndex);
 	    }
-		
+
 		mysqli_stmt_free_result($stmt);
 	    mysqli_close($this->connection);
-	
+
 	    return $rows;
 	}
 
@@ -93,7 +95,7 @@ class SitemService {
 	 * @return stdClass
 	 */
 	public function get_itemByID($itemID) {
-		
+
 		$stmt = mysqli_prepare($this->connection, "SELECT * FROM $this->tablename where itemIndex=?");
 		$this->throwExceptionOnError();
 		
@@ -958,7 +960,7 @@ class SitemService {
 						WHERE DATE(`sl`.`CRE_DTE`) BETWEEN DATE('$beforeDate') AND DATE('$afterDate')
 						GROUP BY `sl`.`itemIndex`
 			UNION ALL SELECT `sl_o`.`itemIndex`, SUM(`sl_o`.`saleQTY`) as 'sum_saleQTY'
-			FROM `salelist_opt` as sl_o
+			FROM $this->table_salelist_opt as sl_o
 						WHERE DATE(`sl_o`.`CRE_DTE`) BETWEEN DATE('$beforeDate') AND DATE('$afterDate')
 				GROUP BY `sl_o`.`itemIndex`
 				) AS tb_sl_sum ON `tb_sl_sum`.`itemIndex` = `tb_i`.`itemIndex`
@@ -1062,7 +1064,7 @@ class SitemService {
 						WHERE DATE(`sl`.`CRE_DTE`) BETWEEN DATE('2016-7-6') AND DATE('2016-7-7')
 						GROUP BY `sl`.`itemIndex`
 			UNION ALL  SELECT `sl_opt`.`itemIndex`, SUM(`sl_opt`.`saleQTY`) as 'sum_saleQTY'
-			FROM `salelist_opt` as sl_opt
+			FROM $this->table_salelist_opt as sl_opt
 						WHERE DATE(`sl_opt`.`CRE_DTE`) BETWEEN DATE('2016-7-6') AND DATE('2016-7-7')
 						GROUP BY `sl_opt`.`itemIndex`
                         ) AS tb_sl_sum ON `tb_sl_sum`.`itemIndex` = `tb_i`.`itemIndex`
@@ -1252,7 +1254,7 @@ class SitemService {
 			, sum(`s_o`.`saleQTY`) as `total_used`
 			,`s_o`.`saleClass`
 			,`s_o`.`itemIndex`
-			FROM `salelist_opt` as `s_o`
+			FROM $this->table_salelist_opt as `s_o`
 			where DATE(`s_o`.`CRE_DTE`) between date('$beforeDate') AND date('$afterDate')
 			and `saleClass` = 'Fl'
 			group by `flavorName`
