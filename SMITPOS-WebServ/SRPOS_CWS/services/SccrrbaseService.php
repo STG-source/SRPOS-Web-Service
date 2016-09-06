@@ -115,7 +115,6 @@ class SccrrbaseService {
 		}
 	}
 	
-	
 	/**
 	 * Returns Code Value.
 	 * 1 :: Create New Record
@@ -157,16 +156,16 @@ class SccrrbaseService {
 	 */
 	public function create_ccrr_base_own($item) {
 
-		$stmt = mysqli_prepare($this->connection, "INSERT INTO $this->tablename (saleNo, CWS_index, serviceUserID, cardID, reserveDuration, CHKIN_DTE, CHKOUT_DTE, CHKOUT_ROLL, CHKOUT_saleNo, spentDuration, CRE_USR, CRE_DTE, UPD_USR, UPD_DTE, DEL_USR, DEL_DTE, Note) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)");
+		$stmt = mysqli_prepare($this->connection, "INSERT INTO $this->tablename (saleNo, CWS_index, serviceUserID, cardID, reserveDuration, CHKIN_DTE, CHKOUT_DTE, CHKOUT_ROLL, CHKOUT_saleNo, spentDuration, CRE_USR, CRE_DTE, UPD_USR, UPD_DTE, DEL_USR, DEL_DTE, Note,customerID,calendarID) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)");
 		$this->throwExceptionOnError();
 
-		mysqli_stmt_bind_param($stmt, 'sississisisssssss', $item->saleNo, $item->CWS_index, $item->serviceUserID, $item->cardID, $item->reserveDuration, 
+		mysqli_stmt_bind_param($stmt, 'sississisissssssssi', $item->saleNo, $item->CWS_index, $item->serviceUserID, $item->cardID, $item->reserveDuration, 
 		$item->CHKIN_DTE->toString('YYYY-MM-dd HH:mm:ss'), 
 		$item->CHKOUT_DTE->toString('YYYY-MM-dd HH:mm:ss'), 
 		$item->CHKOUT_ROLL, $item->CHKOUT_saleNo, $item->spentDuration, $item->CRE_USR, 
 		$item->CRE_DTE->toString('YYYY-MM-dd HH:mm:ss'), $item->UPD_USR, 
 		$item->UPD_DTE->toString('YYYY-MM-dd HH:mm:ss'), $item->DEL_USR, 
-		$item->DEL_DTE->toString('YYYY-MM-dd HH:mm:ss'), $item->Note);
+		$item->DEL_DTE->toString('YYYY-MM-dd HH:mm:ss'), $item->Note, $item->customerID, $item->calendarID);
 		$this->throwExceptionOnError();
 
 		mysqli_stmt_execute($stmt);		
@@ -190,10 +189,10 @@ class SccrrbaseService {
 	 */
 	public function update_ccrr_base($item) {
 	
-		$stmt = mysqli_prepare($this->connection, "UPDATE $this->tablename SET saleNo=?, CWS_index=?, serviceUserID=?, cardID=?, reserveDuration=?, CHKIN_DTE=?, CHKOUT_DTE=?, CHKOUT_ROLL=?, CHKOUT_saleNo=?, spentDuration=?, CRE_USR=?, CRE_DTE=?, UPD_USR=?, UPD_DTE=?, DEL_USR=?, DEL_DTE=?, Note=? WHERE listIndex=?");		
+		$stmt = mysqli_prepare($this->connection, "UPDATE $this->tablename SET saleNo=?, CWS_index=?, serviceUserID=?, cardID=?, reserveDuration=?, CHKIN_DTE=?, CHKOUT_DTE=?, CHKOUT_ROLL=?, CHKOUT_saleNo=?, spentDuration=?, CRE_USR=?, CRE_DTE=?, UPD_USR=?, UPD_DTE=?, DEL_USR=?, DEL_DTE=?, Note=?, customerID=?, calendarID=? WHERE listIndex=?");		
 		$this->throwExceptionOnError();
 		
-		mysqli_stmt_bind_param($stmt, 'sississisisssssssi', $item->saleNo, $item->CWS_index, $item->serviceUserID, $item->cardID, $item->reserveDuration, $item->CHKIN_DTE->toString('YYYY-MM-dd HH:mm:ss'), $item->CHKOUT_DTE->toString('YYYY-MM-dd HH:mm:ss'), $item->CHKOUT_ROLL, $item->CHKOUT_saleNo, $item->spentDuration, $item->CRE_USR, $item->CRE_DTE->toString('YYYY-MM-dd HH:mm:ss'), $item->UPD_USR, $item->UPD_DTE->toString('YYYY-MM-dd HH:mm:ss'), $item->DEL_USR, $item->DEL_DTE->toString('YYYY-MM-dd HH:mm:ss'), $item->Note, $item->listIndex);		
+		mysqli_stmt_bind_param($stmt, 'sississisissssssssii', $item->saleNo, $item->CWS_index, $item->serviceUserID, $item->cardID, $item->reserveDuration, $item->CHKIN_DTE->toString('YYYY-MM-dd HH:mm:ss'), $item->CHKOUT_DTE->toString('YYYY-MM-dd HH:mm:ss'), $item->CHKOUT_ROLL, $item->CHKOUT_saleNo, $item->spentDuration, $item->CRE_USR, $item->CRE_DTE->toString('YYYY-MM-dd HH:mm:ss'), $item->UPD_USR, $item->UPD_DTE->toString('YYYY-MM-dd HH:mm:ss'), $item->DEL_USR, $item->DEL_DTE->toString('YYYY-MM-dd HH:mm:ss'), $item->Note,$item->customerID,$item->calendarID, $item->listIndex);		
 		$this->throwExceptionOnError();
 
 		mysqli_stmt_execute($stmt);		
@@ -254,6 +253,35 @@ class SccrrbaseService {
 		//mysqli_close($this->connection);
 		
 		return $rec_count;
+	}
+	
+	/**
+	* Param 1 :: CustomerID
+	* Param 2 :: CalendarID
+	 * Returns the number of listIndex in the table.
+	 *
+	 *
+	 * Add at 01/12/2015
+	 */
+	public function fncGetListIndexBy_CustomerID_CalendarID($CustomerID,$CalendarID) {
+		$stmt = mysqli_prepare($this->connection, "SELECT listIndex FROM $this->tablename WHERE customerID = ? AND calendarID = ?");
+		$this->throwExceptionOnError();
+
+		mysqli_stmt_bind_param($stmt, 'si', $CustomerID, $CalendarID);
+		mysqli_stmt_execute($stmt);
+		$this->throwExceptionOnError();
+		
+		mysqli_stmt_bind_result($stmt, $listIndex);
+		$this->throwExceptionOnError();
+			
+		mysqli_stmt_fetch($stmt);
+		$this->throwExceptionOnError();
+		
+		
+		mysqli_stmt_free_result($stmt);
+		//mysqli_close($this->connection);
+		
+		return $listIndex;
 	}
 	
 	

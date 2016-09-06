@@ -102,11 +102,11 @@
             }
             function Edit(data)
             {
-               var eurl="edit.php?id={0}&start={2}&end={3}&isallday={4}&title={1}";   
+               var eurl="edit_cws.php?id={0}&start={2}&end={3}&isallday={4}&title={1}";   
                 if(data)
                 {
                     var url = StrFormat(eurl,data);
-                    OpenModelWindow(url,{ width: 600, height: 400, caption:"Manage  The Calendar",onclose:function(){
+                    OpenModelWindow(url,{ width: 600, height: 500, caption:"Manage  The Calendar",onclose:function(){
                        $("#gridcontainer").reload();
                     }});
                 }
@@ -180,7 +180,7 @@
             
             //Add a new event
             $("#faddbtn").click(function(e) {
-                var url ="edit.php";
+                var url ="edit_cws.php";
                 OpenModelWindow(url,{ width: 500, height: 400, caption: "Create New Calendar"});
             });
             //go to today
