@@ -68,7 +68,7 @@ class SitemunitService {
 		mysqli_stmt_execute($stmt);
 		$this->throwExceptionOnError();
 		
-		mysqli_stmt_bind_result($stmt, $row->itemUnitIndex, $row->unit, $row->CRE_DTE, $row->CRE_USR, $row->UPD_DTE, $row->UPD_USR, $row->DEL_DTE, $row->DEL_USR);
+		mysqli_stmt_bind_result($stmt, $row->itemUnitIndex, $row->unit, $row->CRE_DTE, $row->CRE_USR, $row->UPD_DTE, $row->UPD_USR, $row->DEL_DTE, $row->DEL_USR, $row->unitCategoryIndex, $row->referenceUnitIndex, $row->type, $row->ratio, $row->precision);
 		
 		if(mysqli_stmt_fetch($stmt)) {
 	      $row->CRE_DTE = new DateTime($row->CRE_DTE);
@@ -201,7 +201,7 @@ class SitemunitService {
 		
 		$rows = array();
 		
-		mysqli_stmt_bind_result($stmt, $row->itemUnitIndex, $row->unit, $row->CRE_DTE, $row->CRE_USR, $row->UPD_DTE, $row->UPD_USR, $row->DEL_DTE, $row->DEL_USR);
+		mysqli_stmt_bind_result($stmt, $row->itemUnitIndex, $row->unit, $row->CRE_DTE, $row->CRE_USR, $row->UPD_DTE, $row->UPD_USR, $row->DEL_DTE, $row->DEL_USR, $row->unitCategoryIndex, $row->referenceUnitIndex, $row->type, $row->ratio, $row->precision);
 		
 	    while (mysqli_stmt_fetch($stmt)) {
 	      $row->CRE_DTE = new DateTime($row->CRE_DTE);
@@ -209,7 +209,7 @@ class SitemunitService {
 	      $row->DEL_DTE = new DateTime($row->DEL_DTE);
 	      $rows[] = $row;
 	      $row = new stdClass();
-	      mysqli_stmt_bind_result($stmt, $row->itemUnitIndex, $row->unit, $row->CRE_DTE, $row->CRE_USR, $row->UPD_DTE, $row->UPD_USR, $row->DEL_DTE, $row->DEL_USR);
+	      mysqli_stmt_bind_result($stmt, $row->itemUnitIndex, $row->unit, $row->CRE_DTE, $row->CRE_USR, $row->UPD_DTE, $row->UPD_USR, $row->DEL_DTE, $row->DEL_USR, $row->unitCategoryIndex, $row->referenceUnitIndex, $row->type, $row->ratio, $row->precision);
 	    }
 		
 		mysqli_stmt_free_result($stmt);		
@@ -271,15 +271,16 @@ class SitemunitService {
 	 */
 	public function getAll_itemunit() {
 
-		$stmt = mysqli_prepare($this->connection, "SELECT * FROM $this->tablename WHERE DEL_USR IS NULL");	
+		$stmt = mysqli_prepare($this->connection,
+			"SELECT * FROM $this->tablename WHERE DEL_USR IS NULL AND ReferenceUnitIndex = 0");
 		$this->throwExceptionOnError();
-		
+
 		mysqli_stmt_execute($stmt);
 		$this->throwExceptionOnError();
 		
 		$rows = array();
 		
-		mysqli_stmt_bind_result($stmt, $row->itemUnitIndex, $row->unit, $row->CRE_DTE, $row->CRE_USR, $row->UPD_DTE, $row->UPD_USR, $row->DEL_DTE, $row->DEL_USR);
+		mysqli_stmt_bind_result($stmt, $row->itemUnitIndex, $row->unit, $row->CRE_DTE, $row->CRE_USR, $row->UPD_DTE, $row->UPD_USR, $row->DEL_DTE, $row->DEL_USR, $row->unitCategoryIndex, $row->referenceUnitIndex, $row->type, $row->ratio, $row->precision);
 		
 	    while (mysqli_stmt_fetch($stmt)) {
 	      $row->CRE_DTE = new DateTime($row->CRE_DTE);
@@ -287,15 +288,51 @@ class SitemunitService {
 	      $row->DEL_DTE = new DateTime($row->DEL_DTE);
 	      $rows[] = $row;
 	      $row = new stdClass();
-	      mysqli_stmt_bind_result($stmt, $row->itemUnitIndex, $row->unit, $row->CRE_DTE, $row->CRE_USR, $row->UPD_DTE, $row->UPD_USR, $row->DEL_DTE, $row->DEL_USR);
+	      mysqli_stmt_bind_result($stmt, $row->itemUnitIndex, $row->unit, $row->CRE_DTE, $row->CRE_USR, $row->UPD_DTE, $row->UPD_USR, $row->DEL_DTE, $row->DEL_USR, $row->unitCategoryIndex, $row->referenceUnitIndex, $row->type, $row->ratio, $row->precision);
 	    }
 		
 		mysqli_stmt_free_result($stmt);
 	    mysqli_close($this->connection);
-	
+
 	    return $rows;
 	}
 
+	public function sub_getUnitsByRef($refUnit) {
+		// Include Primary itemUnitIndex
+		//$sqlClause = "SELECT * FROM `_itemunit` WHERE itemUnitIndex = " . $refUnit . " union SELECT * FROM `_itemunit` WHERE referenceUnitIndex = " . $refUnit . " order by type";
+		// Below is to exclude
+		$sqlClause = "SELECT * FROM `_itemunit` WHERE referenceUnitIndex = " . $refUnit . " AND DEL_USR IS NULL order by type";
+
+		$stmt = mysqli_prepare($this->connection, $sqlClause);
+		$this->throwExceptionOnError();
+
+		mysqli_stmt_execute($stmt);
+		$this->throwExceptionOnError();
+		
+		$rows = array();
+		
+		mysqli_stmt_bind_result($stmt, $row->itemUnitIndex, $row->unit, $row->CRE_DTE, $row->CRE_USR, $row->UPD_DTE, $row->UPD_USR, $row->DEL_DTE, $row->DEL_USR, $row->unitCategoryIndex, $row->referenceUnitIndex, $row->type, $row->ratio, $row->precision);
+		
+	    while (mysqli_stmt_fetch($stmt)) {
+	      $row->CRE_DTE = new DateTime($row->CRE_DTE);
+	      $row->UPD_DTE = new DateTime($row->UPD_DTE);
+	      $row->DEL_DTE = new DateTime($row->DEL_DTE);
+	      $rows[] = $row;
+	      $row = new stdClass();
+	      mysqli_stmt_bind_result($stmt, $row->itemUnitIndex, $row->unit, $row->CRE_DTE, $row->CRE_USR, $row->UPD_DTE, $row->UPD_USR, $row->DEL_DTE, $row->DEL_USR, $row->unitCategoryIndex, $row->referenceUnitIndex, $row->type, $row->ratio, $row->precision);
+	    }
+		
+		mysqli_stmt_free_result($stmt);
+
+		return $rows;
+	}
+
+	public function getUnitsByRef($refUnit) {
+		$rows = $this->sub_getUnitsByRef($refUnit);
+	    mysqli_close($this->connection);
+
+	    return $rows;
+	}
 
 	public function getSearch_unit($searchCause) {
 		 
@@ -307,7 +344,7 @@ class SitemunitService {
 		
 		$rows = array();
 		
-		mysqli_stmt_bind_result($stmt, $row->itemUnitIndex, $row->unit, $row->CRE_DTE, $row->CRE_USR, $row->UPD_DTE, $row->UPD_USR, $row->DEL_DTE, $row->DEL_USR);
+		mysqli_stmt_bind_result($stmt, $row->itemUnitIndex, $row->unit, $row->CRE_DTE, $row->CRE_USR, $row->UPD_DTE, $row->UPD_USR, $row->DEL_DTE, $row->DEL_USR, $row->unitCategoryIndex, $row->referenceUnitIndex, $row->type, $row->ratio, $row->precision);
 		
 		while (mysqli_stmt_fetch($stmt)) {
 	      $row->CRE_DTE = new DateTime($row->CRE_DTE);
@@ -315,7 +352,7 @@ class SitemunitService {
 	      $row->DEL_DTE = new DateTime($row->DEL_DTE);
 	      $rows[] = $row;
 	      $row = new stdClass();
-	      mysqli_stmt_bind_result($stmt, $row->itemUnitIndex, $row->unit, $row->CRE_DTE, $row->CRE_USR, $row->UPD_DTE, $row->UPD_USR, $row->DEL_DTE, $row->DEL_USR);
+	      mysqli_stmt_bind_result($stmt, $row->itemUnitIndex, $row->unit, $row->CRE_DTE, $row->CRE_USR, $row->UPD_DTE, $row->UPD_USR, $row->DEL_DTE, $row->DEL_USR, $row->unitCategoryIndex, $row->referenceUnitIndex, $row->type, $row->ratio, $row->precision);
 	    }
 
 		mysqli_stmt_free_result($stmt);		
@@ -324,13 +361,12 @@ class SitemunitService {
 		return $rows;
 	}
 	
-	
 	public function update_itemunit_own($item) {
 	
-		$stmt = mysqli_prepare($this->connection, "UPDATE $this->tablename SET unit=?, CRE_DTE=?, CRE_USR=?, UPD_DTE=?, UPD_USR=?, DEL_DTE=?, DEL_USR=? WHERE itemUnitIndex=?");		
+		$stmt = mysqli_prepare($this->connection, "UPDATE $this->tablename SET unit=?, CRE_DTE=?, CRE_USR=?, UPD_DTE=?, UPD_USR=?, DEL_DTE=?, DEL_USR=? WHERE itemUnitIndex=?");
 		$this->throwExceptionOnError();
-		
-		mysqli_stmt_bind_param($stmt, 'sssssssi', $item->unit, $item->CRE_DTE->toString('YYYY-MM-dd HH:mm:ss'), $item->CRE_USR, $item->UPD_DTE->toString('YYYY-MM-dd HH:mm:ss'), $item->UPD_USR, $item->DEL_DTE->toString('YYYY-MM-dd HH:mm:ss'), $item->DEL_USR, $item->itemUnitIndex);		
+
+		mysqli_stmt_bind_param($stmt, 'sssssssi', $item->unit, $item->CRE_DTE->toString('YYYY-MM-dd HH:mm:ss'), $item->CRE_USR, $item->UPD_DTE->toString('YYYY-MM-dd HH:mm:ss'), $item->UPD_USR, $item->DEL_DTE->toString('YYYY-MM-dd HH:mm:ss'), $item->DEL_USR, $item->itemUnitIndex);
 		$this->throwExceptionOnError();
 
 		mysqli_stmt_execute($stmt);		
@@ -339,14 +375,32 @@ class SitemunitService {
 		mysqli_stmt_free_result($stmt);		
 		mysqli_close($this->connection);
 	}
-	
-	
-	public function create_itemunit_own($item) {
 
-		$stmt = mysqli_prepare($this->connection, "INSERT INTO $this->tablename (unit, CRE_DTE, CRE_USR, UPD_DTE, UPD_USR, DEL_DTE, DEL_USR) VALUES (?, ?, ?, ?, ?, ?, ?)");
+	public function update_itemunit_uom($item) {
+
+		$stmt = mysqli_prepare($this->connection, "UPDATE $this->tablename SET unit=?, CRE_DTE=?, CRE_USR=?, UPD_DTE=?, UPD_USR=?, DEL_DTE=?, DEL_USR=?, ratio=?, unitCategoryIndex=?, referenceUnitIndex=?, type=?, `precision`=? WHERE itemUnitIndex=?");
 		$this->throwExceptionOnError();
 
-		mysqli_stmt_bind_param($stmt, 'sssssss', $item->unit, $item->CRE_DTE->toString('YYYY-MM-dd HH:mm:ss'), $item->CRE_USR, $item->UPD_DTE->toString('YYYY-MM-dd HH:mm:ss'), $item->UPD_USR, $item->DEL_DTE->toString('YYYY-MM-dd HH:mm:ss'), $item->DEL_USR);
+		mysqli_stmt_bind_param($stmt, 'sssssssdiiidi', $item->unit, $item->CRE_DTE->toString('YYYY-MM-dd HH:mm:ss'), $item->CRE_USR, $item->UPD_DTE->toString('YYYY-MM-dd HH:mm:ss'), $item->UPD_USR, $item->DEL_DTE->toString('YYYY-MM-dd HH:mm:ss'), $item->DEL_USR, $item->ratio, $item->unitCategoryIndex, $item->referenceUnitIndex, $item->type, $item->precision, $item->itemUnitIndex);
+		$this->throwExceptionOnError();
+
+		mysqli_stmt_execute($stmt);
+		$this->throwExceptionOnError();
+
+		mysqli_stmt_free_result($stmt);
+		$rows = $this->sub_getUnitsByRef($item->referenceUnitIndex);
+		mysqli_close($this->connection);
+
+		return $rows;
+	}
+
+	public function create_itemunit_own($item) {
+
+		$stmt = mysqli_prepare($this->connection, "INSERT INTO $this->tablename (unit, CRE_DTE, CRE_USR, UPD_DTE, UPD_USR, DEL_DTE, DEL_USR, ratio, unitCategoryIndex, referenceUnitIndex, type, `precision`) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)");
+		$this->throwExceptionOnError();
+		/** Seems like precision is the reserved word we have to put it in quote **/
+
+		mysqli_stmt_bind_param($stmt, 'sssssssdiiid', $item->unit, $item->CRE_DTE->toString('YYYY-MM-dd HH:mm:ss'), $item->CRE_USR, $item->UPD_DTE->toString('YYYY-MM-dd HH:mm:ss'), $item->UPD_USR, $item->DEL_DTE->toString('YYYY-MM-dd HH:mm:ss'), $item->DEL_USR, $item->ratio, $item->unitCategoryIndex, $item->referenceUnitIndex, $item->type, $item->precision);
 		$this->throwExceptionOnError();
 
 		mysqli_stmt_execute($stmt);		
@@ -358,9 +412,28 @@ class SitemunitService {
 		mysqli_close($this->connection);
 
 		return $autoid;
-	}	
+	}
 
+	public function create_itemunit_uom_search($itemUnit) {
+
+		$stmt = mysqli_prepare($this->connection, "INSERT INTO $this->tablename (unit, CRE_DTE, CRE_USR, UPD_DTE, UPD_USR, DEL_DTE, DEL_USR, ratio, unitCategoryIndex, referenceUnitIndex, type, `precision`) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)");
+		$this->throwExceptionOnError();
+		/** Seems like precision is the reserved word we have to put it in quote **/
+
+		mysqli_stmt_bind_param($stmt, 'sssssssdiiid', $itemUnit->unit, $itemUnit->CRE_DTE->toString('YYYY-MM-dd HH:mm:ss'), $itemUnit->CRE_USR, $itemUnit->UPD_DTE->toString('YYYY-MM-dd HH:mm:ss'), $itemUnit->UPD_USR, $itemUnit->DEL_DTE->toString('YYYY-MM-dd HH:mm:ss'), $itemUnit->DEL_USR, $itemUnit->ratio, $itemUnit->unitCategoryIndex, $itemUnit->referenceUnitIndex, $itemUnit->type, $itemUnit->precision);
+		$this->throwExceptionOnError();
+
+		mysqli_stmt_execute($stmt);		
+		$this->throwExceptionOnError();
+
+		$autoid = mysqli_stmt_insert_id($stmt);
+
+		mysqli_stmt_free_result($stmt);
+		$rows = $this->sub_getUnitsByRef($itemUnit->referenceUnitIndex);
+		mysqli_close($this->connection);
+
+		return $rows;
+	}
 
 }
-
 ?>
