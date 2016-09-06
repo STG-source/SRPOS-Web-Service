@@ -84,7 +84,7 @@ class SaledetailviewService {
 	/**
 	 * Returns the item corresponding to the value specified for the primary key.
 	 *
-	 * Add authorization or any logical checks for secure access to your data 
+	 * Add authorization or any logical checks for secure access to your data
 	 *
 	 * 
 	 * @return stdClass
@@ -111,7 +111,47 @@ class SaledetailviewService {
 	      return null;
 		}
 	}
-	
+
+	/**
+	 * Returns the item corresponding to the value specified for the saleNo.
+	 *
+	 * Add authorization or any logical checks for secure access to your data
+	 *
+	 *
+	 * @return stdClass
+	 */
+	public function getSaledetailviewBySaleNo($saleNo) {
+		require_once 'ScustomerService.php';
+
+		$stmt = mysqli_prepare($this->connection, "SELECT * FROM $this->tablename where saleNo=?");
+		$this->throwExceptionOnError();
+
+		mysqli_stmt_bind_param($stmt, 's', $saleNo);
+		$this->throwExceptionOnError();
+
+		mysqli_stmt_execute($stmt);
+		$this->throwExceptionOnError();
+
+		mysqli_stmt_bind_result($stmt, $row->saleIndex, $row->saleNo, $row->saleType, $row->customerIndex, $row->saleDone, $row->creditCardID, $row->approvalCode, $row->saleTotalAmount, $row->saleTotalDiscount, $row->saleTotalBalance, $row->creditCardAuthorizer, $row->CRE_DTE, $row->CRE_USR, $row->UPD_DTE, $row->UPD_USR, $row->DEL_DTE, $row->DEL_USR, $row->customerID, $row->fullname);
+
+		if(mysqli_stmt_fetch($stmt)) {
+	      $row->CRE_DTE = new DateTime($row->CRE_DTE);
+	      $row->UPD_DTE = new DateTime($row->UPD_DTE);
+	      $row->DEL_DTE = new DateTime($row->DEL_DTE);
+
+		// Get SaleDetail for Customer By CustomerIndex
+		if($row != null){
+			$ScustomerService = new ScustomerService();
+			$data_CustomerInfo = $ScustomerService->get_customerByID($row->customerIndex,0);
+			$row->phone = $data_CustomerInfo->phone;
+		}
+
+	      return $row;
+		} else {
+	      return null;
+		}
+	}
+
 	/**
 	* get SaleDetail by date from to
 	* Return Sale Detail
