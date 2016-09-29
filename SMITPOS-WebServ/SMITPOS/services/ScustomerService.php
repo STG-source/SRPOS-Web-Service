@@ -92,7 +92,7 @@ class ScustomerService {
 	
 	    return $rows;
 	}
-	
+
 	/**
 	* Operate
 	* Flag = 1 get allSaleTransection
@@ -106,56 +106,55 @@ class ScustomerService {
 		require_once 'SaledetailService.php';
 		// define Valiable
 		$customerDetail = null;
-		
+
 		// get Customer Data
 		$searchCause = "SELECT * FROM $this->tablename WHERE 1 AND CONCAT_WS(' ', fullname, email, customerID, phone, citizenID, passportID) like '%".$search_Key."%'";	
 
 		$stmt = mysqli_prepare($this->connection, $searchCause);
 		$this->throwExceptionOnError();		
-		
+
 		mysqli_stmt_execute($stmt);
 		$this->throwExceptionOnError();
-		
+
 		/* store result */
     	mysqli_stmt_store_result($stmt);
-		
+
 		$num_rows = mysqli_stmt_num_rows($stmt);
-		
+
 		if($num_rows == 0){
 			$customerDetail = null;
 		}elseif($num_rows == 1){
 			mysqli_stmt_bind_result($stmt, $row->customerIndex, $row->customerID,
-			$row->fullname, 
-			$row->address, $row->city, $row->province, $row->postcode, 
-			$row->phone, $row->email, 
-			$row->customerClass, $row->customerType, $row->customerAVP, $row->customerPoint, 
+			$row->fullname,
+			$row->address, $row->city, $row->province, $row->postcode,
+			$row->phone, $row->email,
+			$row->customerClass, $row->customerType, $row->customerAVP, $row->customerPoint,
 			$row->citizenID, $row->passportID, $row->title,
 			$row->cellPhone, $row->fax,
 			$row->CRE_DTE, $row->CRE_USR, $row->UPD_DTE, $row->UPD_USR, $row->DEL_DTE, $row->DEL_USR);
-			
-			if(mysqli_stmt_fetch($stmt)){				
+
+			if(mysqli_stmt_fetch($stmt)){
 				$rows[] = $row; // Set Array
 				$customerDetail = $rows;
 			}
 		}else{
 			mysqli_stmt_bind_result($stmt, $row->customerIndex, $row->customerID,
-			$row->fullname, 
-			$row->address, $row->city, $row->province, $row->postcode, 
-			$row->phone, $row->email, 
-			$row->customerClass, $row->customerType, $row->customerAVP, $row->customerPoint, 
+			$row->fullname,
+			$row->address, $row->city, $row->province, $row->postcode,
+			$row->phone, $row->email,
+			$row->customerClass, $row->customerType, $row->customerAVP, $row->customerPoint,
 			$row->citizenID, $row->passportID, $row->title,
 			$row->cellPhone, $row->fax,
 			$row->CRE_DTE, $row->CRE_USR, $row->UPD_DTE, $row->UPD_USR, $row->DEL_DTE, $row->DEL_USR);
-			
-			
+
 			 while (mysqli_stmt_fetch($stmt)) {
 				$row->CRE_DTE = new DateTime($row->CRE_DTE);
 				$row->UPD_DTE = new DateTime($row->UPD_DTE);
 				$row->DEL_DTE = new DateTime($row->DEL_DTE);
-			  
+
 				$rows[] = $row;
 				$row = new stdClass();
-		  
+
 				mysqli_stmt_bind_result($stmt, $row->customerIndex, $row->customerID,
 				$row->fullname, 
 				$row->address, $row->city, $row->province, $row->postcode, 
@@ -164,17 +163,112 @@ class ScustomerService {
 				$row->citizenID, $row->passportID, $row->title,
 				$row->cellPhone, $row->fax,
 				$row->CRE_DTE, $row->CRE_USR, $row->UPD_DTE, $row->UPD_USR, $row->DEL_DTE, $row->DEL_USR);
-			
+
 			}
-			
-			$customerDetail = $rows;		
+
+			$customerDetail = $rows;
 		}
-		
+
 		$rows_data = new stdClass();
 		$rows_data->customerDetail = $customerDetail;
 		$rows_data->saleSummary = null;
 		$rows_data->itemlistSaleDetail = null;
-		
+
+		// Get SaleDetail for Customer By CustomerIndex
+		if($customerDetail != null && $num_rows == 1){
+			$SaleDetailService = new SaledetailService();
+			$data_SaleDetail = $SaleDetailService->get_Summary_And_List_SaleDetail_By_CustomerIndex($customerDetail[0]->customerIndex,$process_Flag);
+			$rows_data->saleSummary = $data_SaleDetail->saleSummary;
+			$rows_data->itemlistSaleDetail = $data_SaleDetail->listSaleDetail;
+		}
+
+		return $rows_data;
+	}
+
+	/**
+	* Got idea from get_customerSale() with change $search_Key to $itemID (customerIndex)
+	*
+	* Operate
+	* Flag = 1 get allSaleTransection
+	* Flag = 0 get SaleTransection where saleDone = 0
+	* Return
+	* Customer Field
+	* Sale Summary (Depend on flag value)
+	* List of Customer's sale Detail data
+	**/
+	public function get_customerSaleByID($itemID,$process_Flag){
+		require_once 'SaledetailService.php';
+		// define Valiable
+		$customerDetail = null;
+
+		// get Customer Data
+		$stmt = mysqli_prepare($this->connection, "SELECT * FROM $this->tablename where customerIndex=?");
+		$this->throwExceptionOnError();
+
+		mysqli_stmt_bind_param($stmt, 'i', $itemID);
+		$this->throwExceptionOnError();
+
+		mysqli_stmt_execute($stmt);
+		$this->throwExceptionOnError();
+
+		/* store result */
+		mysqli_stmt_store_result($stmt);
+
+		$num_rows = mysqli_stmt_num_rows($stmt);
+
+		if($num_rows == 0){
+			$customerDetail = null;
+		}elseif($num_rows == 1){
+			mysqli_stmt_bind_result($stmt, $row->customerIndex, $row->customerID,
+			$row->fullname,
+			$row->address, $row->city, $row->province, $row->postcode,
+			$row->phone, $row->email,
+			$row->customerClass, $row->customerType, $row->customerAVP, $row->customerPoint,
+			$row->citizenID, $row->passportID, $row->title,
+			$row->cellPhone, $row->fax,
+			$row->CRE_DTE, $row->CRE_USR, $row->UPD_DTE, $row->UPD_USR, $row->DEL_DTE, $row->DEL_USR);
+
+			if(mysqli_stmt_fetch($stmt)){
+				$rows[] = $row; // Set Array
+				$customerDetail = $rows;
+			}
+		}else{
+			mysqli_stmt_bind_result($stmt, $row->customerIndex, $row->customerID,
+			$row->fullname,
+			$row->address, $row->city, $row->province, $row->postcode,
+			$row->phone, $row->email,
+			$row->customerClass, $row->customerType, $row->customerAVP, $row->customerPoint,
+			$row->citizenID, $row->passportID, $row->title,
+			$row->cellPhone, $row->fax,
+			$row->CRE_DTE, $row->CRE_USR, $row->UPD_DTE, $row->UPD_USR, $row->DEL_DTE, $row->DEL_USR);
+
+			 while (mysqli_stmt_fetch($stmt)) {
+				$row->CRE_DTE = new DateTime($row->CRE_DTE);
+				$row->UPD_DTE = new DateTime($row->UPD_DTE);
+				$row->DEL_DTE = new DateTime($row->DEL_DTE);
+
+				$rows[] = $row;
+				$row = new stdClass();
+
+				mysqli_stmt_bind_result($stmt, $row->customerIndex, $row->customerID,
+				$row->fullname,
+				$row->address, $row->city, $row->province, $row->postcode,
+				$row->phone, $row->email,
+				$row->customerClass, $row->customerType, $row->customerAVP, $row->customerPoint,
+				$row->citizenID, $row->passportID, $row->title,
+				$row->cellPhone, $row->fax,
+				$row->CRE_DTE, $row->CRE_USR, $row->UPD_DTE, $row->UPD_USR, $row->DEL_DTE, $row->DEL_USR);
+
+			}
+
+			$customerDetail = $rows;
+		}
+
+		$rows_data = new stdClass();
+		$rows_data->customerDetail = $customerDetail;
+		$rows_data->saleSummary = null;
+		$rows_data->itemlistSaleDetail = null;
+
 		// Get SaleDetail for Customer By CustomerIndex
 		if($customerDetail != null && $num_rows == 1){
 			$SaleDetailService = new SaledetailService();
@@ -182,24 +276,22 @@ class ScustomerService {
 			$rows_data->saleSummary = $data_SaleDetail->saleSummary;		
 			$rows_data->itemlistSaleDetail = $data_SaleDetail->listSaleDetail;
 		}
-		
-				
-		return $rows_data;		
+
+		return $rows_data;
 	}
-	
-	
+
 	/**
 	* Return
 	* CustomerField + Sale Summary
 	**/
 	public function getAll_customerSale($index, $length) {
-		
+
 		$limit = "";
 
 		if ($index > -1) {
 			$limit .= " LIMIT {$index}, {$length} ";
 		}
-				
+
 		$strSQL = "SELECT 
 					cus.customerIndex, 
 					cus.customerID, 
@@ -255,19 +347,18 @@ class ScustomerService {
 						FROM saledetail  
 						WHERE saleDone = 0 
 						GROUP BY customerIndex
-					)  c  ON  c.customerIndex  = a.customerIndex  
+					)  c  ON  c.customerIndex  = a.customerIndex
 					WHERE DEL_USR IS NULL
 					".$limit;
-					
-					
+
 		$stmt = mysqli_prepare($this->connection, $strSQL);
 		$this->throwExceptionOnError();		
-		
+
 		mysqli_stmt_execute($stmt);
 		$this->throwExceptionOnError();
-		
+
 		$rows = array();
-		
+
 		mysqli_stmt_bind_result($stmt, $row->customerIndex, 
 										$row->customerID, 
 										$row->fullname, 
@@ -295,16 +386,14 @@ class ScustomerService {
 										$row->grandTotalBalance, 
 										$row->paidTotal, 
 										$row->remainTotal);
-		
-		
-		
+
 	    while (mysqli_stmt_fetch($stmt)) {
 		  $row->CRE_DTE = new DateTime($row->CRE_DTE);
 	      $row->UPD_DTE = new DateTime($row->UPD_DTE);
 	      $row->DEL_DTE = new DateTime($row->DEL_DTE);
 	      $rows[] = $row;
 	      $row = new stdClass();
-	  
+
 		mysqli_stmt_bind_result($stmt, $row->customerIndex, 
 										$row->customerID, 
 										$row->fullname, 
@@ -334,13 +423,13 @@ class ScustomerService {
 										$row->remainTotal);
 		
 	    }
-		
+
 		mysqli_stmt_free_result($stmt);		
 		mysqli_close($this->connection);
-		
+
 		return $rows;
 	}
-	
+
 	/**
 	* Return 
 	* result of 
@@ -350,19 +439,46 @@ class ScustomerService {
 	public function getAll_customerSale_1stSaleList($search_Key){
 		require_once 'SaledetailService.php';
 		$data_customerSale = $this->get_customerSale($search_Key,1);
-		
+
 		$rows_data = new stdClass();
 		$rows_data->customerDetail = $data_customerSale->customerDetail;
 		$rows_data->saleSummary = $data_customerSale->saleSummary;
 		$rows_data->itemlistSaleDetail = $data_customerSale->itemlistSaleDetail;
 		$rows_data->SaledetailSalelist = null;
-		
+
 		if ($data_customerSale->itemlistSaleDetail != null){		
 			$SaleDetailService = new SaledetailService();		
 			$SaledetailSalelist = $SaleDetailService->getSaledetailSalelist_bySaleNo($data_customerSale->itemlistSaleDetail[0]->saleNo);
 			$rows_data->SaledetailSalelist = $SaledetailSalelist;
 		}
-		
+
+		return $rows_data;
+	}
+
+	/**
+	* Got idea from getAll_customerSale_1stSaleList
+	*
+	* Return
+	* result of
+	* ScustomerService::get_customerSaleByID($itemID,flag)
+	* SaledetailService::getSaledetailSalelist_bySaleNo(saleNo)
+	**/
+	public function getAll_customerSale_1stSaleListByID($itemID){
+		require_once 'SaledetailService.php';
+		$data_customerSale = $this->get_customerSaleByID($itemID,1);
+
+		$rows_data = new stdClass();
+		$rows_data->customerDetail = $data_customerSale->customerDetail;
+		$rows_data->saleSummary = $data_customerSale->saleSummary;
+		$rows_data->itemlistSaleDetail = $data_customerSale->itemlistSaleDetail;
+		$rows_data->SaledetailSalelist = null;
+
+		if ($data_customerSale->itemlistSaleDetail != null){
+			$SaleDetailService = new SaledetailService();
+			$SaledetailSalelist = $SaleDetailService->getSaledetailSalelist_bySaleNo($data_customerSale->itemlistSaleDetail[0]->saleNo);
+			$rows_data->SaledetailSalelist = $SaledetailSalelist;
+		}
+
 		return $rows_data;	
 	}
 
@@ -425,23 +541,23 @@ class ScustomerService {
 	public function getDistinct_customerClass() {
 		$stmt = mysqli_prepare($this->connection, "SELECT DISTINCT (customerClass) FROM $this->tablename");		
 		$this->throwExceptionOnError();
-		
+
 		mysqli_stmt_execute($stmt);
 		$this->throwExceptionOnError();
-		
+
 		$rows = array();
-		
+
 		mysqli_stmt_bind_result($stmt, $row->customerClass);
-		
+
 	    while (mysqli_stmt_fetch($stmt)) {
 	      $rows[] = $row;
 	      $row = new stdClass();
 	      mysqli_stmt_bind_result($stmt, $row->customerClass);
 	    }
-		
+
 		mysqli_stmt_free_result($stmt);
 	    mysqli_close($this->connection);
-	
+
 	    return $rows;
 	}
 
@@ -456,23 +572,23 @@ class ScustomerService {
 	public function getDistinct_customerType() {
 		$stmt = mysqli_prepare($this->connection, "SELECT DISTINCT (customerType) FROM $this->tablename");		
 		$this->throwExceptionOnError();
-		
+
 		mysqli_stmt_execute($stmt);
 		$this->throwExceptionOnError();
-		
+
 		$rows = array();
-		
+
 		mysqli_stmt_bind_result($stmt, $row->customerType);
-		
+
 	    while (mysqli_stmt_fetch($stmt)) {
 	      $rows[] = $row;
 	      $row = new stdClass();
 	      mysqli_stmt_bind_result($stmt, $row->customerType);
 	    }
-		
+
 		mysqli_stmt_free_result($stmt);
 	    mysqli_close($this->connection);
-	
+
 	    return $rows;
 	}
 
@@ -488,8 +604,47 @@ class ScustomerService {
 
 		$stmt = mysqli_prepare($this->connection, "SELECT * FROM $this->tablename where customerIndex=?");
 		$this->throwExceptionOnError();
+
+		mysqli_stmt_bind_param($stmt, 'i', $itemID);
+		$this->throwExceptionOnError();
+
+		mysqli_stmt_execute($stmt);
+		$this->throwExceptionOnError();
+
+		mysqli_stmt_bind_result($stmt, $row->customerIndex, $row->customerID,
+		$row->fullname,
+		$row->address, $row->city, $row->province, $row->postcode,
+		$row->phone, $row->email,
+		$row->customerClass, $row->customerType, $row->customerAVP, $row->customerPoint,
+		$row->citizenID, $row->passportID, $row->title,
+		$row->cellPhone, $row->fax,
+		$row->CRE_DTE, $row->CRE_USR, $row->UPD_DTE, $row->UPD_USR, $row->DEL_DTE, $row->DEL_USR);
+
+		if(mysqli_stmt_fetch($stmt)) {
+	      $row->CRE_DTE = new DateTime($row->CRE_DTE);
+	      $row->UPD_DTE = new DateTime($row->UPD_DTE);
+	      $row->DEL_DTE = new DateTime($row->DEL_DTE);
+	      return $row;
+		} else {
+	      return null;
+		}
+	}
+	
+	
+	/**
+	 * Returns the item corresponding to the value specified for the primary key.
+	 *
+	 * Add authorization or any logical checks for secure access to your data 
+	 *
+	 * 
+	 * @return stdClass
+	 */
+	public function get_customerByCustomerID($CustomerID) {
+
+		$stmt = mysqli_prepare($this->connection, "SELECT * FROM $this->tablename where customerID=?");
+		$this->throwExceptionOnError();
 		
-		mysqli_stmt_bind_param($stmt, 'i', $itemID);		
+		mysqli_stmt_bind_param($stmt, 's', $CustomerID);		
 		$this->throwExceptionOnError();
 		
 		mysqli_stmt_execute($stmt);
@@ -564,8 +719,7 @@ class ScustomerService {
 		mysqli_close($this->connection);
 
 	}
-	
-	
+
 	/**
 	* Operation
 	* Insert New customer Object
@@ -576,15 +730,15 @@ class ScustomerService {
 		
 		// Generate CustomerID
 		$strSQL = "SELECT max(customerIndex) + 1 as max_index FROM _customer";
-		
+
 		$stmt = mysqli_prepare($this->connection, $strSQL);
 		$this->throwExceptionOnError();	
-		
+
 		mysqli_stmt_execute($stmt);
 		$this->throwExceptionOnError();
-		
+
 		mysqli_stmt_bind_result($stmt, $row->max_index);
-		
+
 		$strCustomerID = "";
 		if(mysqli_stmt_fetch($stmt)) {	
 			if (strlen ($row->max_index) == 1){
@@ -637,16 +791,16 @@ class ScustomerService {
 	 * @return void
 	 */
 	public function update_customer($item) {
-	
+
 		$stmt = mysqli_prepare($this->connection, "UPDATE $this->tablename SET customerID=?, fullname=?, address=?, province=?, postcode=?, phone=?, email=?, customerClass=?, customerType=?, customerAVP=?, customerPoint=?, CRE_DTE=?, CRE_USR=?, UPD_DTE=?, UPD_USR=?, DEL_DTE=?, DEL_USR=? WHERE customerIndex=?");		
 		$this->throwExceptionOnError();
-		
+
 		mysqli_stmt_bind_param($stmt, 'sssssssssddssssssi', $item->customerID, $item->fullname, $item->address, $item->province, $item->postcode, $item->phone, $item->email, $item->customerClass, $item->customerType, $item->customerAVP, $item->customerPoint, $item->CRE_DTE->toString('YYYY-MM-dd HH:mm:ss'), $item->CRE_USR, $item->UPD_DTE->toString('YYYY-MM-dd HH:mm:ss'), $item->UPD_USR, $item->DEL_DTE->toString('YYYY-MM-dd HH:mm:ss'), $item->DEL_USR, $item->customerIndex);
 		$this->throwExceptionOnError();
 
 		mysqli_stmt_execute($stmt);		
 		$this->throwExceptionOnError();
-		
+
 		mysqli_stmt_free_result($stmt);		
 		mysqli_close($this->connection);
 	}
@@ -760,6 +914,41 @@ class ScustomerService {
 		mysqli_close($this->connection);
 		
 		return $rows;
+	}
+	
+	
+	public function get_customerIDByCitizenID($CitizenID){
+		
+		$customerID = null;
+		
+		// get Customer Data
+		$searchCause = "SELECT customerID FROM $this->tablename WHERE citizenID = '".$CitizenID."'";	
+
+		$stmt = mysqli_prepare($this->connection, $searchCause);
+		$this->throwExceptionOnError();		
+		
+		mysqli_stmt_execute($stmt);
+		$this->throwExceptionOnError();
+		
+		/* store result */
+    	mysqli_stmt_store_result($stmt);
+	
+		$num_rows = mysqli_stmt_num_rows($stmt);
+		
+		//echo $num_rows;
+		
+		if($num_rows == 0){
+			$customerID = null;
+		}elseif($num_rows == 1){
+			mysqli_stmt_bind_result($stmt,$customerID);
+			$this->throwExceptionOnError();
+			
+			mysqli_stmt_fetch($stmt);
+			$this->throwExceptionOnError();
+			
+		}
+				
+		return $customerID;		
 	}
 	
 	
