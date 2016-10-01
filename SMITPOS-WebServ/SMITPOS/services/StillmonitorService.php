@@ -407,10 +407,7 @@ class StillmonitorService {
 		,$row->SaleDone
 		,$row->ActionAmount
 		,$row->DrawerBalance
-		,$row->CreateDate
-		,$row->CreateUser
-		,$row->UpdateDate
-		,$row->UpdateUser
+		,$row->Today
 		);
 
 	    while (mysqli_stmt_fetch($stmt)) {
@@ -422,10 +419,7 @@ class StillmonitorService {
 			,$row->SaleDone
 			,$row->ActionAmount
 			,$row->DrawerBalance
-			,$row->CreateDate
-			,$row->CreateUser
-			,$row->UpdateDate
-			,$row->UpdateUser
+			,$row->Today
 		  );
 	    }
 
@@ -446,10 +440,9 @@ class StillmonitorService {
 			for ($i=0; $i < $rows_length; $i++) {
 				$hasSaleType = false;
 				for ($j=0; $j < count($result); $j++) {
-					if($result[$j]->SaleType == $rows[$i]->SaleType)
+					if($result[$j]->SaleType == $rows[$i]->SaleType && $result[$j]->SaleDone == $rows[$i]->SaleDone)
 					{
 						$hasSaleType = true;
-						$result[$j]->hasSaleType = true;
 						$temp_index = $j;
 					}
 				}
@@ -459,12 +452,14 @@ class StillmonitorService {
 					$row = new stdClass();
 					$row->SaleType = $rows[$i]->SaleType;
 					$row->SaleDone = $rows[$i]->SaleDone;
+					$row->Length = 1;
 					$row->ActionData = array();
 					array_push($row->ActionData,$rows[$i]);
 					array_push($result,$row);
 				} // End Init Data
 				else
 				{
+					$result[$temp_index]->Length++;
 					array_push($result[$temp_index]->ActionData,$rows[$i]);
 				}
 
