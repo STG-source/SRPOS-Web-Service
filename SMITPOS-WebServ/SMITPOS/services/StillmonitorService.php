@@ -466,7 +466,19 @@ class StillmonitorService {
 			}
 		}
 
+		$cmp = function ($a,$b){
+			$i = strcmp($a->SaleType,$b->SaleType);
+			if($i <= -1 || $i >= 1)
+			{
+				return $i;
+			}
+			else
+			{
+				return strcmp($a->SaleDone,$b->SaleDone);
+			}
+		};
 
+		uasort($result,$cmp);
 
 	    return $result;
 	}
