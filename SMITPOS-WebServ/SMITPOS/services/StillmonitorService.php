@@ -452,14 +452,14 @@ class StillmonitorService {
 					$row = new stdClass();
 					$row->SaleType = $rows[$i]->SaleType;
 					$row->SaleDone = $rows[$i]->SaleDone;
-					$row->Length = 1;
+					$row->ActionAmount = $rows[$i]->ActionAmount;
 					$row->ActionData = array();
 					array_push($row->ActionData,$rows[$i]);
 					array_push($result,$row);
 				} // End Init Data
 				else
 				{
-					$result[$temp_index]->Length++;
+					$result[$temp_index]->ActionAmount += $rows[$i]->ActionAmount;
 					array_push($result[$temp_index]->ActionData,$rows[$i]);
 				}
 
