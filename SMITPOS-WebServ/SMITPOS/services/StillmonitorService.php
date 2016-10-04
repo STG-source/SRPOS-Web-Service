@@ -379,6 +379,110 @@ class StillmonitorService {
 	    return $rows;
 	}
 
+	/// searchCause is "where cause" in SQL
+	///
+	/// saleTypeCollection is Array of SaleType Object  => {saleType , saleDone}
+	///
+	/// saleType 0 => TakeHome , 1 => Delivery , 2 => Dine-In , 10 => Normal , 20 => Credit, 30 => Online
+	///
+	/// saleDone -1 => Void Bill , 0 => Credit , 1 => Done (Money) ,
+	/// 2 => Done (Credit Card) , 3 => Done (Cheque) , 4 => Done (Net Bank)
+	/// 41 => (Advance Credit) , 42 => (Wait Credit)
+	///
+	public function getSellBalanceSaleTypeCollection($searchCause , array $saleTypeCollection)
+	{
+		/* TBC */
+		// Query all Data
+		$stmt = mysqli_prepare($this->connection, $searchCause);
+		$this->throwExceptionOnError();
+
+		mysqli_stmt_execute($stmt);
+		$this->throwExceptionOnError();
+
+		$rows = array();
+
+		mysqli_stmt_bind_result($stmt
+		,$row->BillNo
+		,$row->SaleType
+		,$row->SaleDone
+		,$row->ActionAmount
+		,$row->DrawerBalance
+		,$row->Today
+		);
+
+	    while (mysqli_stmt_fetch($stmt)) {
+	      $rows[] = $row;
+	      $row = new stdClass();
+	      mysqli_stmt_bind_result($stmt
+			,$row->BillNo
+			,$row->SaleType
+			,$row->SaleDone
+			,$row->ActionAmount
+			,$row->DrawerBalance
+			,$row->Today
+		  );
+	    }
+
+		mysqli_stmt_free_result($stmt);
+	    mysqli_close($this->connection);
+
+		unset($row);
+
+		// Create Group of Data into associative Array with index SaleType and SaleDone as Index
+
+		//$result => obj.SaleType , obj.saleDone , obj.actionType
+		if(isset($rows) && is_array($rows) && (count($rows) > 0))
+		{
+			$result = array();
+			$rows_length = count($rows);
+			$hasSaleType = false;
+			$temp_index = null;
+			for ($i=0; $i < $rows_length; $i++) {
+				$hasSaleType = false;
+				for ($j=0; $j < count($result); $j++) {
+					if($result[$j]->SaleType == $rows[$i]->SaleType && $result[$j]->SaleDone == $rows[$i]->SaleDone)
+					{
+						$hasSaleType = true;
+						$temp_index = $j;
+					}
+				}
+
+				if(!$hasSaleType)
+				{
+					$row = new stdClass();
+					$row->SaleType = $rows[$i]->SaleType;
+					$row->SaleDone = $rows[$i]->SaleDone;
+					$row->ActionAmount = $rows[$i]->ActionAmount;
+					$row->ActionData = array();
+					array_push($row->ActionData,$rows[$i]);
+					array_push($result,$row);
+				} // End Init Data
+				else
+				{
+					$result[$temp_index]->ActionAmount += $rows[$i]->ActionAmount;
+					array_push($result[$temp_index]->ActionData,$rows[$i]);
+				}
+
+			}
+		}
+
+		$cmp = function ($a,$b){
+			$i = strcmp($a->SaleType,$b->SaleType);
+			if($i <= -1 || $i >= 1)
+			{
+				return $i;
+			}
+			else
+			{
+				return strcmp($a->SaleDone,$b->SaleDone);
+			}
+		};
+
+		uasort($result,$cmp);
+
+	    return $result;
+	}
+
 	public function getUplimit($searchCause) {
 		$stmt = mysqli_prepare($this->connection, $searchCause);		
 		$this->throwExceptionOnError();
