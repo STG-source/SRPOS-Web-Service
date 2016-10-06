@@ -428,6 +428,12 @@ class StillmonitorService {
 
 		unset($row);
 
+
+		if(!isset($rows) || !is_array($rows) || (count($rows) <= 0))
+		{
+			return array();
+		}
+
 		// Create Group of Data into associative Array with index SaleType and SaleDone as Index
 
 		//$result => obj.SaleType , obj.saleDone , obj.actionType
