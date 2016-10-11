@@ -56,7 +56,6 @@ class WorkcodeService {
 	 * @return array
 	 */
 	public function getAllWorkcode() {
-
 		$stmt = mysqli_prepare($this->connection, "SELECT * FROM $this->tablename");		
 		$this->throwExceptionOnError();
 		
@@ -75,7 +74,6 @@ class WorkcodeService {
 		
 		mysqli_stmt_free_result($stmt);
 	    mysqli_close($this->connection);
-	
 	    return $rows;
 	}
 
@@ -281,7 +279,53 @@ class WorkcodeService {
 	
 	    return $rows;
 	}
-	
+
+	public function getServiceVersion()
+	{
+		return $this->hashDirectory(null);
+	}
+
+	/****/
+	/**
+	* Generate an MD5 hash string from the contents of a directory.
+	* This Code From https://jonlabelle.com/snippets/view/php/generate-md5-hash-for-directory
+	* @param string $directory
+	* @return boolean|string
+	*/
+	public function hashDirectory($directory)
+	{
+		if($directory == null || trim($directory) == false)
+		{
+			$directory = dirname(__FILE__);
+		}
+
+		if (! is_dir($directory))
+		{
+			return false;
+		}
+
+		$files = array();
+		$dir = dir($directory);
+
+		while (false !== ($file = $dir->read()))
+		{
+			if ($file != '.' and $file != '..')
+			{
+				if (is_dir($directory . '/' . $file))
+				{
+					$files[] = hashDirectory($directory . '/' . $file);
+				}
+				else
+				{
+					$files[] = md5_file($directory . '/' . $file);
+				}
+			}
+		}
+
+		$dir->close();
+
+		return md5(implode('', $files));
+	}
 }
 
 ?>

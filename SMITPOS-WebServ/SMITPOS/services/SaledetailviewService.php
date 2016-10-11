@@ -849,7 +849,17 @@ class SaledetailviewService {
 
 	public function getBalanceMovement($fromDate, $endDate, $index = -1, $length = 0) 
 	{
-		$sql = "SELECT `j`.`actionIndex` as `actionIndex`, `j`.`drawerIndex` as `drawerIndex`, `j`.`actionType` as `actionType`, `j`.`actionAmount` as `actionAmount`, `j`.`drawerBalance` as `drawerBalance`, `j`.`CRE_DTE` as `CRE_DTE`, `j`.`CRE_USR` as `CRE_USR`, `s`.`userIndex` as `userIndex`, `s`.`fullname` as `fullname`, `s`.`myusername` as `myusername` FROM (_till_monitor `j` JOIN _myuser `s`) ";
+		$sql = "SELECT `j`.`actionIndex` as `actionIndex`"
+		.", `j`.`drawerIndex` as `drawerIndex`"
+		.", `j`.`actionType` as `actionType`"
+		.", `j`.`actionAmount` as `actionAmount`"
+		.", `j`.`drawerBalance` as `drawerBalance`"
+		.", if(isnull(`j`.`UPD_USR`),`j`.`CRE_DTE`,`j`.`UPD_DTE`) AS `CRE_DTE`"
+		.", if(isnull(`j`.`UPD_USR`),`j`.`CRE_USR`,`j`.`UPD_USR`) AS `CRE_USR`"
+		.", `s`.`userIndex` as `userIndex`"
+		.", `s`.`fullname` as `fullname`"
+		.", `s`.`myusername` as `myusername`"
+		." FROM (_till_monitor `j` JOIN _myuser `s`) ";
 
 		$where = "WHERE ((CONVERT_TZ(`j`.`CRE_DTE`, '+00:00', '+07:00') BETWEEN ? AND ?) OR (CONVERT_TZ(`j`.`UPD_DTE`, '+00:00', '+07:00') BETWEEN ? AND ?)) AND (`j`.`CRE_USR` = `s`.`userID`) ";
 
