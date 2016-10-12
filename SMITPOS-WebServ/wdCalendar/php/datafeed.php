@@ -1,9 +1,9 @@
 <?php
-require_once 'Zend/Date.php';
+require_once '../../zendframework/library/Zend/Date/DateObject.php';
 include_once("dbconfig.php");
 include_once("functions.php");
 include_once("../../SMITPOS/services/ScustomerService.php");
-include_once("../../SRPOS_CWS/services/SccrrbaseService.php");
+include_once("../../SMITPOS/services/SccrrbaseService.php");
 
 function addCalendar($st, $et, $sub, $ade){
   $ret = array();
