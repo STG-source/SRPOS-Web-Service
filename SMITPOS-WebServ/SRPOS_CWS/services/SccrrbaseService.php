@@ -115,7 +115,6 @@ class SccrrbaseService {
 		}
 	}
 	
-	
 	/**
 	 * Returns Code Value.
 	 * 1 :: Create New Record
@@ -133,14 +132,15 @@ class SccrrbaseService {
 		if($count_SaleNo == 0){
 			$this->create_ccrr_base_own($item);
 			$reSult_Code = 1; // Create New Record
-		}else if($count_SaleNo == 1){
-			$this->update_ccrr_base($item);
-			$reSult_Code = 2; // Update Old Recode
 		}else{
+			if($count_SaleNo == 1){
+				$reSult_Code = 2; // Update Old Recode
+			}else{
+				$reSult_Code = 3; // Update Last Record 
+			}
 			// get Max ListIndex for Updaet Last Transection
 			$item->listIndex = $this->get_Max_listIndex($item->saleNo);
 			$this->update_ccrr_base($item); 
-			$reSult_Code = 3; // Update Last Record 
 		}
 		
 		return $reSult_Code;
@@ -156,16 +156,16 @@ class SccrrbaseService {
 	 */
 	public function create_ccrr_base_own($item) {
 
-		$stmt = mysqli_prepare($this->connection, "INSERT INTO $this->tablename (saleNo, CWS_index, serviceUserID, cardID, reserveDuration, CHKIN_DTE, CHKOUT_DTE, CHKOUT_ROLL, CHKOUT_saleNo, spentDuration, CRE_USR, CRE_DTE, UPD_USR, UPD_DTE, DEL_USR, DEL_DTE, Note) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)");
+		$stmt = mysqli_prepare($this->connection, "INSERT INTO $this->tablename (saleNo, CWS_index, serviceUserID, cardID, reserveDuration, CHKIN_DTE, CHKOUT_DTE, CHKOUT_ROLL, CHKOUT_saleNo, spentDuration, CRE_USR, CRE_DTE, UPD_USR, UPD_DTE, DEL_USR, DEL_DTE, Note,customerID,calendarID) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)");
 		$this->throwExceptionOnError();
 
-		mysqli_stmt_bind_param($stmt, 'sississisisssssss', $item->saleNo, $item->CWS_index, $item->serviceUserID, $item->cardID, $item->reserveDuration, 
+		mysqli_stmt_bind_param($stmt, 'sississisissssssssi', $item->saleNo, $item->CWS_index, $item->serviceUserID, $item->cardID, $item->reserveDuration, 
 		$item->CHKIN_DTE->toString('YYYY-MM-dd HH:mm:ss'), 
 		$item->CHKOUT_DTE->toString('YYYY-MM-dd HH:mm:ss'), 
 		$item->CHKOUT_ROLL, $item->CHKOUT_saleNo, $item->spentDuration, $item->CRE_USR, 
 		$item->CRE_DTE->toString('YYYY-MM-dd HH:mm:ss'), $item->UPD_USR, 
 		$item->UPD_DTE->toString('YYYY-MM-dd HH:mm:ss'), $item->DEL_USR, 
-		$item->DEL_DTE->toString('YYYY-MM-dd HH:mm:ss'), $item->Note);
+		$item->DEL_DTE->toString('YYYY-MM-dd HH:mm:ss'), $item->Note, $item->customerID, $item->calendarID);
 		$this->throwExceptionOnError();
 
 		mysqli_stmt_execute($stmt);		
@@ -189,10 +189,10 @@ class SccrrbaseService {
 	 */
 	public function update_ccrr_base($item) {
 	
-		$stmt = mysqli_prepare($this->connection, "UPDATE $this->tablename SET saleNo=?, CWS_index=?, serviceUserID=?, cardID=?, reserveDuration=?, CHKIN_DTE=?, CHKOUT_DTE=?, CHKOUT_ROLL=?, CHKOUT_saleNo=?, spentDuration=?, CRE_USR=?, CRE_DTE=?, UPD_USR=?, UPD_DTE=?, DEL_USR=?, DEL_DTE=?, Note=? WHERE listIndex=?");		
+		$stmt = mysqli_prepare($this->connection, "UPDATE $this->tablename SET saleNo=?, CWS_index=?, serviceUserID=?, cardID=?, reserveDuration=?, CHKIN_DTE=?, CHKOUT_DTE=?, CHKOUT_ROLL=?, CHKOUT_saleNo=?, spentDuration=?, CRE_USR=?, CRE_DTE=?, UPD_USR=?, UPD_DTE=?, DEL_USR=?, DEL_DTE=?, Note=?, customerID=?, calendarID=? WHERE listIndex=?");		
 		$this->throwExceptionOnError();
 		
-		mysqli_stmt_bind_param($stmt, 'sississisisssssssi', $item->saleNo, $item->CWS_index, $item->serviceUserID, $item->cardID, $item->reserveDuration, $item->CHKIN_DTE->toString('YYYY-MM-dd HH:mm:ss'), $item->CHKOUT_DTE->toString('YYYY-MM-dd HH:mm:ss'), $item->CHKOUT_ROLL, $item->CHKOUT_saleNo, $item->spentDuration, $item->CRE_USR, $item->CRE_DTE->toString('YYYY-MM-dd HH:mm:ss'), $item->UPD_USR, $item->UPD_DTE->toString('YYYY-MM-dd HH:mm:ss'), $item->DEL_USR, $item->DEL_DTE->toString('YYYY-MM-dd HH:mm:ss'), $item->Note, $item->listIndex);		
+		mysqli_stmt_bind_param($stmt, 'sississisissssssssii', $item->saleNo, $item->CWS_index, $item->serviceUserID, $item->cardID, $item->reserveDuration, $item->CHKIN_DTE->toString('YYYY-MM-dd HH:mm:ss'), $item->CHKOUT_DTE->toString('YYYY-MM-dd HH:mm:ss'), $item->CHKOUT_ROLL, $item->CHKOUT_saleNo, $item->spentDuration, $item->CRE_USR, $item->CRE_DTE->toString('YYYY-MM-dd HH:mm:ss'), $item->UPD_USR, $item->UPD_DTE->toString('YYYY-MM-dd HH:mm:ss'), $item->DEL_USR, $item->DEL_DTE->toString('YYYY-MM-dd HH:mm:ss'), $item->Note,$item->customerID,$item->calendarID, $item->listIndex);		
 		$this->throwExceptionOnError();
 
 		mysqli_stmt_execute($stmt);		
@@ -255,6 +255,35 @@ class SccrrbaseService {
 		return $rec_count;
 	}
 	
+	/**
+	* Param 1 :: CustomerID
+	* Param 2 :: CalendarID
+	 * Returns the number of listIndex in the table.
+	 *
+	 *
+	 * Add at 01/12/2015
+	 */
+	public function fncGetListIndexBy_CustomerID_CalendarID($CustomerID,$CalendarID) {
+		$stmt = mysqli_prepare($this->connection, "SELECT listIndex FROM $this->tablename WHERE customerID = ? AND calendarID = ?");
+		$this->throwExceptionOnError();
+
+		mysqli_stmt_bind_param($stmt, 'si', $CustomerID, $CalendarID);
+		mysqli_stmt_execute($stmt);
+		$this->throwExceptionOnError();
+		
+		mysqli_stmt_bind_result($stmt, $listIndex);
+		$this->throwExceptionOnError();
+			
+		mysqli_stmt_fetch($stmt);
+		$this->throwExceptionOnError();
+		
+		
+		mysqli_stmt_free_result($stmt);
+		//mysqli_close($this->connection);
+		
+		return $listIndex;
+	}
+	
 	
 	/**
 	 * Returns Max listIndex number of SaleNo in the table.
@@ -297,50 +326,79 @@ class SccrrbaseService {
 	public function checkOutAfterPayDone($ccrr_obj, $saleDetail, $saleList)
 	{
 		$result = 0;
-		require_once("../../SMITPOS/services/SaledetailService.php");
-		
-		$count_SaleNo = $this->count_SaleNo($item->saleNo,2); // check ว่ามีรายการที่ต้องอัพเดทไหม
+		require_once("../SMITPOS/services/SaledetailService.php");
+		//require_once("http://192.168.1.210/SMITPOS/services/SaledetailService.php");
+
+		$count_SaleNo = $this->count_SaleNo($ccrr_obj->saleNo,2); // check ว่ามีรายการที่ต้องอัพเดทไหม
 		if($count_SaleNo > 1 ){
 			// $saleDetail and $saleList is not null, update value
 			$cls_SaledetailService = new SaledetailService();
 			$cls_SaledetailService->addSalelistTransition($saleDetail,$saleList);
 
 			// disable wifi
-			$this->fncDisableWifi($item->saleNo);
-			
-			
+			$this->fncDisableWifi($ccrr_obj->saleNo);
+
 		}
+
 		// update ccrrBase object
 		$result_AddUpdate = $this->createOrUpdate($ccrr_obj);
 		if($result_AddUpdate != 3){
 			$result = 1;
 		}
-		
+
+		// disable wifi [TBC -- For Temporary Test]
+		$this->fncDisableWifi($ccrr_obj->saleNo);
+
 		return $result;
-		
+
 	}
-	
+
 	/**
 	 * Disable Wifi by saleNo
 	 *
 	 * 
 	 */
 	private function fncDisableWifi($saleNo){
-		require_once("../../srpos_radius/services/RadcheckService.php");
 
-		$cls_RadcheckService = new 	RadcheckService();
-		
-		$max_ID = $cls_RadcheckService->get_Max_listIndex($saleNo);
+		//$url = URL_TO_RECEIVING_PHP;
+		$url = "http://192.168.1.200/srpos_radius/controllers/grabcmd.php";
+		//$url = "http://localhost/srpos_radius/controllers/grabcmd.php";
 
-		if ($max_ID != 0){
-			$row = new stdClass();
-			$row->id = $max_ID;	
-			$row->username = $saleNo;
-			$row->attribute = "Expiration";
-			$row->op = ":=";
-			$row->value = "dead";
-			$cls_RadcheckService->updateRadcheck($row);
+		$fields = array(
+			"wifiUser" => "",
+			"expiration" => "DEAD"
+		);
+
+		$fields["wifiUser"] = $saleNo;
+
+		$postvars='';
+		$sep='';
+		foreach($fields as $key=>$value)
+		{
+				$postvars.= $sep.urlencode($key).'='.urlencode($value);
+				$sep='&';
 		}
+
+		$ch = curl_init();
+
+		curl_setopt($ch,CURLOPT_URL,$url);
+		curl_setopt($ch,CURLOPT_POST,count($fields));
+		curl_setopt($ch,CURLOPT_POSTFIELDS,$postvars);
+		curl_setopt($ch,CURLOPT_RETURNTRANSFER,true);
+
+		$result = curl_exec($ch);
+
+		curl_close($ch);
+
+/**		echo $result; // Test Result CAN NOT echo or var_dump here with Flex AMF!! **/
+		//xdebug_start_trace();
+			//var_dump($result);
+			//xdebug_var_dump($result);
+		//xdebug_stop_trace();
+/** See more about this issue at https://xp-dev.com/trac/SMITDev/ticket/214#comment:2
+    Miha Corlan talk about this issus  **/
+
+		return $result;
 	}
 
 

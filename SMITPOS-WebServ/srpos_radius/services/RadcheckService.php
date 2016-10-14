@@ -164,28 +164,83 @@ class RadcheckService {
 	*/
 	public function createOrUpdate($item){
 		//check transection SaleNo ,count row of SaleNo
-		$c_num = $this->count_SaleNo($item[0]->username);
+		$Result = 0;
+		$c_num = $this->count_SaleNo($item->userName);
 		$c_set = $c_num / 3;
 		if($c_set == 0){
-			$this->createRadcheck($item[0]);
-			$this->createRadcheck($item[1]);
-			$this->createRadcheck($item[2]);
-			return 1;
-		}elseif($c_set == 1){
-			$this->updateRadcheck($item[0]);
-			$this->updateRadcheck($item[1]);
-			$this->updateRadcheck($item[2]);
-			return 2;
+			// Create Record 1 :: User-Password
+			$this->ReConnect();
+			$record_1 = new stdClass();
+			$record_1->id = 0;	
+			$record_1->username = $item->userName;
+			$record_1->attribute = "User-Password";
+			$record_1->op = ":=";
+			$record_1->value = $item->userPassWord;
+			$this->createRadcheck($record_1);
+			// Create Record 2 :: Max-All-Session
+			$this->ReConnect();
+			$record_2 = new stdClass();
+			$record_2->id = 0;	
+			$record_2->username = $item->userName;
+			$record_2->attribute = "Max-All-Session";
+			$record_2->op = ":=";
+			$record_2->value = $item->session;
+			$this->createRadcheck($record_2);
+			// Create Record 3 :: Expiration
+			$this->ReConnect();
+			$record_3 = new stdClass();
+			$record_3->id = 0;	
+			$record_3->username = $item->userName;
+			$record_3->attribute = "Expiration";
+			$record_3->op = ":=";
+			$record_3->value = $item->expireDate;
+			$this->createRadcheck($record_3);
+
+			$Result = 1;
+			
 		}else{
-			$max_ID = $this->get_Max_listIndex($item[0]->username);
-			$item[0]->id = $max_ID - 2;
-			$item[1]->id = $max_ID - 1;
-			$item[2]->id = $max_ID;
-			$this->updateRadcheck($item[0]);
-			$this->updateRadcheck($item[1]);
-			$this->updateRadcheck($item[2]);	
-			return 3;
+
+			if($c_set == 1){
+				$Result = 2;
+			}else{
+				$Result = 3;
+			}
+
+			$max_ID = $this->get_Max_listIndex($item->userName);
+
+			// Create Record 1 :: User-Password
+			$this->ReConnect();
+			$record_1 = new stdClass();
+			$record_1->id = $max_ID - 2;	
+			$record_1->username = $item->userName;
+			$record_1->attribute = "User-Password";
+			$record_1->op = ":=";
+			$record_1->value = $item->userPassWord;
+			$this->updateRadcheck($record_1);
+			// Create Record 2 :: Max-All-Session
+			$this->ReConnect();
+			$record_2 = new stdClass();
+			$record_2->id = $max_ID - 1;	
+			$record_2->username = $item->userName;
+			$record_2->attribute = "Max-All-Session";
+			$record_2->op = ":=";
+			$record_2->value = $item->session;
+			$this->updateRadcheck($record_2);
+			// Create Record 3 :: Expiration
+			$this->ReConnect();
+			$record_3 = new stdClass();
+			$record_3->id = $max_ID;
+			$record_3->username = $item->userName;
+			$record_3->attribute = "Expiration";
+			$record_3->op = ":=";
+			$record_3->value = $item->expireDate;
+			$this->updateRadcheck($record_3);
+
 		}
+
+		return $Result;
+
+		
 	}
 	
 	/**

@@ -84,7 +84,7 @@ class SaledetailviewService {
 	/**
 	 * Returns the item corresponding to the value specified for the primary key.
 	 *
-	 * Add authorization or any logical checks for secure access to your data 
+	 * Add authorization or any logical checks for secure access to your data
 	 *
 	 * 
 	 * @return stdClass
@@ -111,7 +111,47 @@ class SaledetailviewService {
 	      return null;
 		}
 	}
-	
+
+	/**
+	 * Returns the item corresponding to the value specified for the saleNo.
+	 *
+	 * Add authorization or any logical checks for secure access to your data
+	 *
+	 *
+	 * @return stdClass
+	 */
+	public function getSaledetailviewBySaleNo($saleNo) {
+		require_once 'ScustomerService.php';
+
+		$stmt = mysqli_prepare($this->connection, "SELECT * FROM $this->tablename where saleNo=?");
+		$this->throwExceptionOnError();
+
+		mysqli_stmt_bind_param($stmt, 's', $saleNo);
+		$this->throwExceptionOnError();
+
+		mysqli_stmt_execute($stmt);
+		$this->throwExceptionOnError();
+
+		mysqli_stmt_bind_result($stmt, $row->saleIndex, $row->saleNo, $row->saleType, $row->customerIndex, $row->saleDone, $row->creditCardID, $row->approvalCode, $row->saleTotalAmount, $row->saleTotalDiscount, $row->saleTotalBalance, $row->creditCardAuthorizer, $row->CRE_DTE, $row->CRE_USR, $row->UPD_DTE, $row->UPD_USR, $row->DEL_DTE, $row->DEL_USR, $row->customerID, $row->fullname);
+
+		if(mysqli_stmt_fetch($stmt)) {
+	      $row->CRE_DTE = new DateTime($row->CRE_DTE);
+	      $row->UPD_DTE = new DateTime($row->UPD_DTE);
+	      $row->DEL_DTE = new DateTime($row->DEL_DTE);
+
+		// Get SaleDetail for Customer By CustomerIndex
+		if($row != null){
+			$ScustomerService = new ScustomerService();
+			$data_CustomerInfo = $ScustomerService->get_customerByID($row->customerIndex,0);
+			$row->phone = $data_CustomerInfo->phone;
+		}
+
+	      return $row;
+		} else {
+	      return null;
+		}
+	}
+
 	/**
 	* get SaleDetail by date from to
 	* Return Sale Detail
@@ -809,7 +849,17 @@ class SaledetailviewService {
 
 	public function getBalanceMovement($fromDate, $endDate, $index = -1, $length = 0) 
 	{
-		$sql = "SELECT `j`.`actionIndex` as `actionIndex`, `j`.`drawerIndex` as `drawerIndex`, `j`.`actionType` as `actionType`, `j`.`actionAmount` as `actionAmount`, `j`.`drawerBalance` as `drawerBalance`, `j`.`CRE_DTE` as `CRE_DTE`, `j`.`CRE_USR` as `CRE_USR`, `s`.`userIndex` as `userIndex`, `s`.`fullname` as `fullname`, `s`.`myusername` as `myusername` FROM (_till_monitor `j` JOIN _myuser `s`) ";
+		$sql = "SELECT `j`.`actionIndex` as `actionIndex`"
+		.", `j`.`drawerIndex` as `drawerIndex`"
+		.", `j`.`actionType` as `actionType`"
+		.", `j`.`actionAmount` as `actionAmount`"
+		.", `j`.`drawerBalance` as `drawerBalance`"
+		.", if(isnull(`j`.`UPD_USR`),`j`.`CRE_DTE`,`j`.`UPD_DTE`) AS `CRE_DTE`"
+		.", if(isnull(`j`.`UPD_USR`),`j`.`CRE_USR`,`j`.`UPD_USR`) AS `CRE_USR`"
+		.", `s`.`userIndex` as `userIndex`"
+		.", `s`.`fullname` as `fullname`"
+		.", `s`.`myusername` as `myusername`"
+		." FROM (_till_monitor `j` JOIN _myuser `s`) ";
 
 		$where = "WHERE ((CONVERT_TZ(`j`.`CRE_DTE`, '+00:00', '+07:00') BETWEEN ? AND ?) OR (CONVERT_TZ(`j`.`UPD_DTE`, '+00:00', '+07:00') BETWEEN ? AND ?)) AND (`j`.`CRE_USR` = `s`.`userID`) ";
 
