@@ -1,6 +1,5 @@
-# README # 2015
-
-This README would normally document whatever steps are necessary to get your application up and running.
+13/10/2016
+# README # 
 
 ### What is this repository for? ###
 
@@ -17,7 +16,7 @@ This README would normally document whatever steps are necessary to get your app
 * Database configuration
 * How to run tests
 * Deployment instructions
-* [SRPOS Milestone](https://sites.google.com/a/smitsolution.com/project-milestone/documents)
+* SRPOS Milestone
 
 ### Contribution guidelines ###
 
