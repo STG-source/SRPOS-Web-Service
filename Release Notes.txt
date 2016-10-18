@@ -1,0 +1,22 @@
+Release Notes - SRPOS Web Service - Version 2.00
+ 
+Update all web service to support SRPOS - Version 2.12.Build2016-09-01R
+* SRPOS registered hash 4c2c6202c8559f8cb4ca1e097db5a878
+ 
+** Improvement
+    * [SSF-82] - ให้แสดงชื่อ Flavor (ส่วนประกอบ)  ในรายงานส่วนประกอบทั้งที่ขายไปแล้วและยังไม่ได้ทำการขาย
+    * [SSF-83] - Make feature selecting R-Series or M-Series to use Specific features
+    * [SSF-84] - การปรับปรุงวิธีการอ่านค่า Config ในไฟล์ srpconfig.xml
+    * [SSF-91] - เพิ่ม Feature พวกเศษเงิน เช่น สตางค์ จะมีการคิดเงินสามแบบ
+ 
+** Bug
+    * [SSF-89] - BUGs report from migration & field test 21/9/2016
+    * [SSF-90] - BUG: export ความเคลื่อนไหวบัญชีทำงานผิดพลาด xml ไม่มี tag </balance> ปิดท้าย
+ 
+** Task
+    * [SSF-86] - CCRR feature configuration for R-Series not correct
+    * [SSF-95] - Web Service Version Configuration Service
+    * [SSF-98] - Maximize Full Wide Screen Bug
+ 
+** Sub-task
+    * [SSF-99] - Incorrect Floating Point Number in Flex (for Finance)
