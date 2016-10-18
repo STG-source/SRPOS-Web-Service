@@ -1,4 +1,4 @@
-Release Notes - SRPOS Web Service - Version 2.00
+Release Notes - SRPOS Web Service - Version 2.00 (13/10/2016)
  
 Update all web service to support SRPOS - Version 2.12.Build2016-09-01R
 * SRPOS registered hash 4c2c6202c8559f8cb4ca1e097db5a878
