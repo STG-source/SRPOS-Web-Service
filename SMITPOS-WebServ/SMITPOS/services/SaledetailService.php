@@ -2198,7 +2198,12 @@ class SaledetailService {
 			/** WORKAROUND ISSUE#15 sales front **/
 			$billItemPrice = floatval(str_replace(',', '', $item->billItemPrice));
 
-			$saleDiscount = 0.00; // $item->saleDiscount
+			if(isset($item->billItemPriceDiscount)){
+				$saleDiscount = $item->billItemPriceDiscount; // $item->saleDiscount
+			}
+			else{
+				$saleDiscount = 0.00 ; // $item->saleDiscount
+			}
 			mysqli_stmt_bind_param($stmt, 'siddddsssssss', $saledetail->saleNo, $item->billItemIndex, $billItemPrice, $saleQTY, $stockQty, $saleDiscount, $item->billSaleClass, $saledetail->CRE_USR, $saledetail->CRE_DTE->toString('YYYY-MM-dd HH:mm:ss'), $saledetail->UPD_USR, $saledetail->UPD_DTE->toString('YYYY-MM-dd HH:mm:ss'), $saledetail->DEL_USR, $saledetail->DEL_DTE->toString('YYYY-MM-dd HH:mm:ss'));
 			$this->throwExceptionOnError();
 
