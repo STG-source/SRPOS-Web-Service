@@ -36,6 +36,7 @@ class SaledetailService {
 	var $table_monitor = "_till_monitor";
 	var $table_item = "_item";
 	var $table_orderinfo = "orderinfo";
+	var $table_saledetail_void = "saledetail_void";
 
 	var $connection;
 	var $connection2;
@@ -1536,6 +1537,176 @@ class SaledetailService {
 		*/
 		return $this->getSaledetailSalelist_bySaleNo($saleNo);
 	}
+
+	// SSF-121 About Void-Bill
+	public function voidBillBySaleNo($saledetail,$salelist,$operationType) {
+		$isSuccess = false;
+
+		if($salelist == null)
+		{
+			return $isSuccess;
+		}
+
+		$saleDone = -1;
+		$saleNo = $saledetail->saleNo;
+
+		// Update saleDone Status
+		$stmt = mysqli_prepare($this->connection,"UPDATE $this->tablename SET saleDone=? WHERE saleNo=?");
+		$this->throwExceptionOnError();
+
+		mysqli_stmt_bind_param($stmt, 'is', $saleDone, $saleNo);
+		$this->throwExceptionOnError();
+
+		mysqli_execute($stmt);
+		$this->throwExceptionOnError();
+
+		mysqli_stmt_free_result($stmt);
+
+		// Insert new saleDetailVoid Data
+		$stmt = mysqli_prepare($this->connection,"INSERT INTO $this->table_saledetail_void (saleNo,saleNoNewBill,CRE_DTE,CRE_USR,UPD_DTE,UPD_USR,DEL_DTE,DEL_USR) VALUES (?, ?, ?, ?, ?, ?, ?, ?)");
+		$this->throwExceptionOnError();
+
+		$saleNoNewBill = null;
+		mysqli_stmt_bind_param($stmt
+		,'ssssssss'
+		, $saledetail->saleNo
+		, $saleNoNewBill
+		, $saledetail->CRE_DTE->toString('YYYY-MM-dd HH:mm:ss')
+		, $saledetail->CRE_USR
+		, $saledetail->UPD_DTE->toString('YYYY-MM-dd HH:mm:ss')
+		, $saledetail->UPD_USR
+		, $saledetail->DEL_DTE != null ? $saledetail->DEL_DTE->toString('YYYY-MM-dd HH:mm:ss') : null
+		, $saledetail->DEL_USR);
+		$this->throwExceptionOnError();
+
+		mysqli_stmt_execute($stmt);
+		$this->throwExceptionOnError();
+
+		mysqli_stmt_free_result($stmt);
+
+		// retrieve last rows from Till Monitor
+		if ($result = mysqli_query($this->connection, "SELECT drawerBalance FROM $this->table_monitor ORDER BY actionIndex DESC LIMIT 1")) {
+			$row = mysqli_fetch_array($result);
+			$drawerBalance_old = $row[0];
+		}
+
+		// Till Monitor refund money
+		// Create Till Monitor for refund money to customer
+		$stmt = mysqli_prepare($this->connection, "INSERT INTO $this->table_monitor (actionIndex, drawerIndex, actionType, actionAmount, drawerBalance, CRE_DTE, CRE_USR, UPD_DTE, UPD_USR, DEL_DTE, DEL_USR) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)");
+		$this->throwExceptionOnError();
+
+		$actionIndex = 0; // $item_monitor->actionIndex
+		$drawerIndex = 1; // $item_monitor->drawerIndex
+		$actionType = $operationType; // $item_monitor->actionType
+		$actionAmount = $saledetail->saleTotalBalance; // $item_monitor->actionAmount
+		$drawerBalance = $drawerBalance_old - $saledetail->saleTotalBalance; // $item_monitor->drawerBalance
+
+		mysqli_stmt_bind_param($stmt,'iisddssssss'
+		, $actionIndex
+		, $drawerIndex
+		, $actionType
+		, $actionAmount
+		, $drawerBalance
+		, $saledetail->CRE_DTE->toString('YYYY-MM-dd HH:mm:ss')
+		, $saledetail->CRE_USR
+		, $saledetail->UPD_DTE->toString('YYYY-MM-dd HH:mm:ss')
+		, $saledetail->UPD_USR
+		, $saledetail->DEL_DTE != null ? $saledetail->DEL_DTE->toString('YYYY-MM-dd HH:mm:ss') : null
+		, $saledetail->DEL_USR);
+		$this->throwExceptionOnError();
+
+		mysqli_stmt_execute($stmt);		
+		$this->throwExceptionOnError();
+
+		$autoid_monitor = mysqli_stmt_insert_id($stmt);
+		mysqli_stmt_free_result($stmt);
+
+		// Update SalelistTransaction
+		///======================================================
+		$autoidlist = array();
+
+		foreach ($salelist as $item) {
+			//***** Query Check Item Qty
+			$itemStock = 0;
+
+			$stmt = mysqli_prepare($this->connection, "SELECT itemStock FROM $this->table_item WHERE itemIndex = ? LIMIT 1");
+			$this->throwExceptionOnError();
+
+			mysqli_stmt_bind_param($stmt, "i", $item->itemIndex);  // $item->itemIndex
+			$this->throwExceptionOnError();
+
+			mysqli_stmt_execute($stmt);
+			$this->throwExceptionOnError();
+
+			mysqli_stmt_bind_result($stmt, $col1);
+			$this->throwExceptionOnError();
+
+			mysqli_stmt_fetch($stmt);
+			$this->throwExceptionOnError();
+
+			$itemStock = $col1;
+			mysqli_stmt_free_result($stmt);
+			mysqli_stmt_close($stmt);
+
+			$stockQty = $itemStock + $item->saleQTY; // $item->stockQTY
+
+			//***** CreateSaleList
+			$stmt = mysqli_prepare($this->connection, "INSERT INTO $this->table_salelist (saleNo, itemIndex, salePrice, saleQTY, stockQTY, saleDiscount, saleClass, CRE_USR, CRE_DTE, UPD_USR, UPD_DTE, DEL_USR, DEL_DTE) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)");
+			$this->throwExceptionOnError();
+
+			if(isset($item->saleDiscount)){
+				$saleDiscount = $item->saleDiscount; // $item->saleDiscount
+			}
+			else{
+				$saleDiscount = 0.00 ; // $item->saleDiscount
+			}
+
+			$saleQTY = 0 - $item->saleQTY;
+			$saleClass = "vo";
+
+			mysqli_stmt_bind_param($stmt, 'siddddsssssss'
+			, $saledetail->saleNo
+			, $item->itemIndex
+			, $item->salePrice
+			, $saleQTY
+			, $stockQty
+			, $saleDiscount
+			, $saleClass
+			, $saledetail->CRE_USR
+			, $saledetail->CRE_DTE != null ? $saledetail->CRE_DTE->toString('YYYY-MM-dd HH:mm:ss') : null
+			, $saledetail->UPD_USR
+			, $saledetail->UPD_DTE != null ? $saledetail->UPD_DTE->toString('YYYY-MM-dd HH:mm:ss') : null
+			, $saledetail->DEL_USR
+			, $saledetail->DEL_DTE != null ? $saledetail->DEL_DTE->toString('YYYY-MM-dd HH:mm:ss') : null);
+			$this->throwExceptionOnError();
+
+			mysqli_stmt_execute($stmt);
+			$this->throwExceptionOnError();
+
+			//***** Update Item
+			$stmt = mysqli_prepare($this->connection, "UPDATE $this->table_item SET itemStock = ? WHERE itemIndex = ?");
+			$this->throwExceptionOnError();
+
+			mysqli_stmt_bind_param($stmt, 'ii', $stockQty, $item->itemIndex);
+			$this->throwExceptionOnError();
+
+			mysqli_stmt_execute($stmt);
+			$this->throwExceptionOnError();
+
+			mysqli_stmt_free_result($stmt);
+			mysqli_stmt_close($stmt);
+
+		}
+		///======================================================
+
+		// free result set
+		//mysqli_free_result($result);
+		mysqli_close($this->connection);
+
+		$isSuccess = true;
+
+		return $isSuccess;
+	}
 	/**
 	 * updateBillPayment untested
 	 */
@@ -2320,7 +2491,7 @@ class SaledetailService {
 
 		return $autoid_saledetail;
 	}
-	
+
 	/**
 	* No duplicated transaction, Prevent SSF-63 UI-Bouncing Problem
 	*
@@ -2328,7 +2499,7 @@ class SaledetailService {
 	*
 	*/
 	public function addSalelistTransition_own_distinct($saledetail, $itemlist) {
-		
+
 		// Check if same data exist
 		
 		$stmt = mysqli_prepare($this->connection, "SELECT saleIndex FROM $this->tablename WHERE saleNo = ? LIMIT 1");
