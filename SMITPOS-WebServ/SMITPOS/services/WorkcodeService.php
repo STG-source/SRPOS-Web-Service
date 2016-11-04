@@ -216,31 +216,31 @@ class WorkcodeService {
 	 * @return array
 	 */
 	public function getWorkcode_paged($startIndex, $numItems) {
-		
+
 		$stmt = mysqli_prepare($this->connection, "SELECT * FROM $this->tablename LIMIT ?, ?");
 		$this->throwExceptionOnError();
-		
+
 		mysqli_stmt_bind_param($stmt, 'ii', $startIndex, $numItems);
 		mysqli_stmt_execute($stmt);
 		$this->throwExceptionOnError();
-		
+
 		$rows = array();
-		
+
 		mysqli_stmt_bind_result($stmt, $row->code, $row->setvalue);
-		
+
 	    while (mysqli_stmt_fetch($stmt)) {
 	      $rows[] = $row;
 	      $row = new stdClass();
 	      mysqli_stmt_bind_result($stmt, $row->code, $row->setvalue);
 	    }
-		
+
 		mysqli_stmt_free_result($stmt);		
 		mysqli_close($this->connection);
-		
+
 		return $rows;
 	}
-	
-	
+
+
 	/**
 	 * Utility function to throw an exception if an error occurs 
 	 * while running a mysql command.
@@ -254,29 +254,29 @@ class WorkcodeService {
 			throw new Exception('MySQL Error - '. $msg);
 		}		
 	}
-	
-	
+
+
 	public function getAllWorkcode_own() {
 
 		$stmt = mysqli_prepare($this->connection, "SELECT * FROM $this->tablename");		
 		$this->throwExceptionOnError();
-		
+
 		mysqli_stmt_execute($stmt);
 		$this->throwExceptionOnError();
-		
+
 		$rows = array();
-		
+
 		mysqli_stmt_bind_result($stmt, $row->code, $row->setvalue);
-		
+
 	    while (mysqli_stmt_fetch($stmt)) {
 	      $rows[] = $row;
 	      $row = new stdClass();
 	      mysqli_stmt_bind_result($stmt, $row->code, $row->setvalue);
 	    }
-		
+
 		mysqli_stmt_free_result($stmt);
 	    mysqli_close($this->connection);
-	
+
 	    return $rows;
 	}
 
