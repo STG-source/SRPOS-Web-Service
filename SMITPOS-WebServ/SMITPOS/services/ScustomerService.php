@@ -675,7 +675,7 @@ class ScustomerService {
 	 *
 	 * Add authorization or any logical checks for secure access to your data 
 	 *
-	 * 
+	 *
 	 * @return stdClass
 	 */
 	public function get_customerNameBySaleNo($SaleNo) {

@@ -1705,6 +1705,36 @@ class SaledetailService {
 
 		return $isSuccess;
 	}
+
+	public function addReferenceNewBillToVoidBill($voidSaleNo,$newSaleNo,$update_date) {
+		$isSuccess = false;
+
+		if($voidSaleNo == null || $voidSaleNo == ""
+		|| $newSaleNo == null || $newSaleNo == ""
+		|| $update_date == null)
+		{
+			return $isSuccess;
+		}
+		// Update saleDone Status
+		//
+		$stmt = mysqli_prepare($this->connection,"UPDATE $this->table_saledetail_void SET saleNoNewBill=? , UPD_DTE=? WHERE saleNo=?");
+		$this->throwExceptionOnError();
+
+		mysqli_stmt_bind_param($stmt, 'sss'
+		, $newSaleNo
+		, $update_date != null ? $update_date->toString('YYYY-MM-dd HH:mm:ss') : null
+		, $voidSaleNo);
+		$this->throwExceptionOnError();
+
+		mysqli_execute($stmt);
+		$this->throwExceptionOnError();
+
+		mysqli_stmt_free_result($stmt);
+		mysqli_stmt_close($stmt);
+
+		$isSuccess = true;
+		return $isSuccess;
+	}
 	/**
 	 * updateBillPayment untested
 	 */
