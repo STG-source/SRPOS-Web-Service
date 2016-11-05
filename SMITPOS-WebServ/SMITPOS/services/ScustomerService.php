@@ -26,6 +26,7 @@ class ScustomerService {
 	var $port = 3306;
 	var $databasename = "stechschema";
 	var $tablename = "_customer";
+	var $table_saledetail_view = "saledetailview";
 
 	var $connection;
 
@@ -629,8 +630,8 @@ class ScustomerService {
 	      return null;
 		}
 	}
-	
-	
+
+
 	/**
 	 * Returns the item corresponding to the value specified for the primary key.
 	 *
@@ -643,13 +644,13 @@ class ScustomerService {
 
 		$stmt = mysqli_prepare($this->connection, "SELECT * FROM $this->tablename where customerID=?");
 		$this->throwExceptionOnError();
-		
+
 		mysqli_stmt_bind_param($stmt, 's', $CustomerID);		
 		$this->throwExceptionOnError();
-		
+
 		mysqli_stmt_execute($stmt);
 		$this->throwExceptionOnError();
-		
+
 		mysqli_stmt_bind_result($stmt, $row->customerIndex, $row->customerID,
 		$row->fullname, 
 		$row->address, $row->city, $row->province, $row->postcode, 
@@ -658,11 +659,38 @@ class ScustomerService {
 		$row->citizenID, $row->passportID, $row->title,
 		$row->cellPhone, $row->fax,
 		$row->CRE_DTE, $row->CRE_USR, $row->UPD_DTE, $row->UPD_USR, $row->DEL_DTE, $row->DEL_USR);
-		
+
 		if(mysqli_stmt_fetch($stmt)) {
 	      $row->CRE_DTE = new DateTime($row->CRE_DTE);
 	      $row->UPD_DTE = new DateTime($row->UPD_DTE);
 	      $row->DEL_DTE = new DateTime($row->DEL_DTE);
+	      return $row;
+		} else {
+	      return null;
+		}
+	}
+
+	/**
+	 * Returns the item corresponding to the value specified for the customer name
+	 *
+	 * Add authorization or any logical checks for secure access to your data 
+	 *
+	 * 
+	 * @return stdClass
+	 */
+	public function get_customerNameBySaleNo($SaleNo) {
+		$stmt = mysqli_prepare($this->connection, "SELECT customerID , fullname FROM $this->table_saledetail_view where saleNo=?");
+		$this->throwExceptionOnError();
+
+		mysqli_stmt_bind_param($stmt, 's', $SaleNo);
+		$this->throwExceptionOnError();
+
+		mysqli_stmt_execute($stmt);
+		$this->throwExceptionOnError();
+
+		mysqli_stmt_bind_result($stmt,$row->customerID,$row->fullname);
+
+		if(mysqli_stmt_fetch($stmt)) {
 	      return $row;
 		} else {
 	      return null;

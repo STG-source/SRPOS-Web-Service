@@ -29,8 +29,6 @@ class SaledetailService {
 	var $port = "3306";
 	var $databasename = "stechschema";
 	var $tablename = "saledetail";
-
-	var $table_saledetail = "saledetail";
 	var $table_salelist = "salelist";
 	var $table_salelist_opt = "salelist_opt";
 	var $table_monitor = "_till_monitor";
@@ -1615,7 +1613,7 @@ class SaledetailService {
 		, $saledetail->DEL_USR);
 		$this->throwExceptionOnError();
 
-		mysqli_stmt_execute($stmt);		
+		mysqli_stmt_execute($stmt);
 		$this->throwExceptionOnError();
 
 		$autoid_monitor = mysqli_stmt_insert_id($stmt);
@@ -1662,7 +1660,7 @@ class SaledetailService {
 			}
 
 			$saleQTY = 0 - $item->saleQTY;
-			$saleClass = "vo";
+			$saleClass = "Vo";
 
 			mysqli_stmt_bind_param($stmt, 'siddddsssssss'
 			, $saledetail->saleNo
