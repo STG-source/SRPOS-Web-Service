@@ -2157,20 +2157,20 @@ class SaledetailService {
 
 		mysqli_stmt_execute($stmt);
 		$this->throwExceptionOnError();
-		
+
 		$row = new stdClass();
 		mysqli_stmt_bind_result($stmt, $row->saleIndex, $row->saleNo, $row->saleType, $row->customerIndex, $row->saleDone, $row->creditCardID, $row->approvalCode, $row->saleTotalAmount, $row->saleTotalDiscount, $row->saleTotalBalance, $row->creditCardAuthorizer, $row->CRE_DTE, $row->CRE_USR, $row->UPD_DTE, $row->UPD_USR, $row->DEL_DTE, $row->DEL_USR);
-		
+
 	    if(mysqli_stmt_fetch($stmt)){
 			$row->CRE_DTE = new DateTime($row->CRE_DTE);
 			$row->UPD_DTE = new DateTime($row->UPD_DTE);
 			$row->DEL_DTE = new DateTime($row->DEL_DTE);
 			$saledetail = $row;
 		}
-		
+
 		mysqli_stmt_free_result($stmt);
 		mysqli_stmt_close($stmt);
-		
+
 		// SALELIST
 		$sql = "SELECT  `c`.`listIndex` AS  `listIndex` , 
 				`c`.`saleNo` AS  `saleNo` , 
@@ -2193,14 +2193,14 @@ class SaledetailService {
 				`j`.`itemDetail` AS `itemDetail` ,
 				`c`.`salePrice` AS `itemPrice` ,
 				`c`.`saleQTY` AS `itemQTY` 
-				FROM `salelist` `c` LEFT JOIN (SELECT * FROM `_item`)  `j` ON (`c`.`itemIndex` =  `j`.`itemIndex`) WHERE `c`.`saleNo` = '{$saleNo}'";
+				FROM `salelist` `c` LEFT JOIN (SELECT * FROM `_item`)  `j` ON (`c`.`itemIndex` =  `j`.`itemIndex`) WHERE `c`.`saleNo` = '{$saleNo}' AND (LOWER(`c`.`saleClass`) NOT LIKE 'vo')";
 		//remark* No Calculation set query
 		$stmt = mysqli_prepare($this->connection,$sql);
 		$this->throwExceptionOnError();
 
 		mysqli_stmt_execute($stmt);
 		$this->throwExceptionOnError();
-		
+
 		$itemlist = array();
 		$row = new stdClass();
 		mysqli_stmt_bind_result($stmt, $row->listIndex,
@@ -2224,7 +2224,7 @@ class SaledetailService {
 			$row->itemDetail,
 			$row->itemPrice,
 			$row->itemQTY);
-		
+
 	    while (mysqli_stmt_fetch($stmt)) {
 			if(!is_null($row->CRE_DTE))
 				$row->CRE_DTE = new DateTime($row->CRE_DTE);
@@ -2257,11 +2257,11 @@ class SaledetailService {
 				$row->itemPrice,
 				$row->itemQTY);
 	    }
-		
+
 		mysqli_stmt_free_result($stmt);
 		mysqli_stmt_close($stmt);
-		
-		
+
+
 		for($i = 0;$i<sizeof($itemlist);$i++){
 			$optionPrice = 0;
 			$primary_listindex = $itemlist[$i]->listIndex;
@@ -2287,7 +2287,7 @@ class SaledetailService {
 					FROM `salelist_opt` `c` LEFT JOIN (SELECT * FROM `_item`)  `j` ON (`c`.`itemIndex` =  `j`.`itemIndex`) WHERE `c`.`saleNo` = '{$saleNo}' AND `c`.`primary_listindex` = '{$primary_listindex}' AND `c`.`DEL_USR` IS NULL");
 			//remark* No Calculation set query
 			mysqli_stmt_execute($stmt);
-			
+
 			$row = new stdClass();
 			mysqli_stmt_bind_result($stmt, $row->listIndex,
 				$row->primary_listindex,
@@ -2307,7 +2307,7 @@ class SaledetailService {
 				$row->DEL_USR,$row->DEL_DTE,
 				$row->itemQTY, 
 				$row->itemPrice);
-				
+
 			while (mysqli_stmt_fetch($stmt)) {
 				if(!is_null($row->CRE_DTE))
 					$row->CRE_DTE = new DateTime($row->CRE_DTE);
@@ -2319,7 +2319,7 @@ class SaledetailService {
 					$optionPrice += $row->itemPrice;
 				}
 				$itemlist[$i]->itemOPT[] = $row;
-				
+
 				$row = new stdClass();
 				mysqli_stmt_bind_result($stmt, $row->listIndex,
 					$row->primary_listindex,
@@ -2349,13 +2349,13 @@ class SaledetailService {
 				$itemlist[$i]->SalePrice = ($itemPrice + $optionPrice)*$itemQTY;
 			}
 		}
-		
+
 		$rows_data = new stdClass();
 		$rows_data->saleDetail = $saledetail;
 		$rows_data->itemList = $itemlist;
-		
+
 		return $rows_data;
-		
+
 	}
 
 	public function addSalelistTransition_own($saledetail, $itemlist) {
