@@ -1735,12 +1735,93 @@ class SaledetailService {
 		$isSuccess = true;
 		return $isSuccess;
 	}
+
+	/**
+	*	Can get both Voided by NewBill and get NewBill by Voided voidBillPayment
+	*
+	*   $checkVoidSaleNo = Check Void Sale by SaleNo from New getMax_billNo
+	*   $checkNewBill = Check SaleNo from New Bill by SaleNo from Void Bill
+	*
+	**/
+	public function getRefVoidBillBySaleNo($checkVoidSaleNo,$checkNewBill){
+		$result = null;
+
+		if($checkVoidSaleNo == null && $checkNewBill == null)
+		{
+			return $result;
+		}
+		////==============================================
+		$stmt = mysqli_prepare($this->connection,"SELECT * FROM $this->table_saledetail_void WHERE saleNoNewBill = ?");
+		$this->throwExceptionOnError();
+
+		mysqli_stmt_bind_param($stmt,'s',$checkVoidSaleNo);
+		$this->throwExceptionOnError();
+
+		mysqli_execute($stmt);
+		$this->throwExceptionOnError();
+
+		$result = new stdClass();
+
+		$result->voidBillSaleNo = new stdClass();
+		mysqli_stmt_bind_result($stmt
+		,$result->voidBillSaleNo->saleIndex
+		,$result->voidBillSaleNo->saleNo
+		,$result->voidBillSaleNo->saleNoNewBill
+		,$result->voidBillSaleNo->CRE_DTE
+		,$result->voidBillSaleNo->CRE_USR
+		,$result->voidBillSaleNo->UPD_DTE
+		,$result->voidBillSaleNo->UPD_USR
+		,$result->voidBillSaleNo->DEL_DTE
+		,$result->voidBillSaleNo->DEL_USR);
+		$this->throwExceptionOnError();
+
+	    if(mysqli_stmt_fetch($stmt)){
+			// OK
+		}
+
+		mysqli_stmt_free_result($stmt);
+
+		$stmt = mysqli_prepare($this->connection,"SELECT * FROM $this->table_saledetail_void WHERE saleNo = ?");
+		$this->throwExceptionOnError();
+
+		mysqli_stmt_bind_param($stmt,'s',$checkNewBill);
+		$this->throwExceptionOnError();
+
+		mysqli_execute($stmt);
+		$this->throwExceptionOnError();
+
+		////==============================================
+		$result->voidNewBillSaleNo = new stdClass();
+
+		mysqli_stmt_bind_result($stmt
+		,$result->voidNewBillSaleNo->saleIndex
+		,$result->voidNewBillSaleNo->saleNo
+		,$result->voidNewBillSaleNo->saleNoNewBill
+		,$result->voidNewBillSaleNo->CRE_DTE
+		,$result->voidNewBillSaleNo->CRE_USR
+		,$result->voidNewBillSaleNo->UPD_DTE
+		,$result->voidNewBillSaleNo->UPD_USR
+		,$result->voidNewBillSaleNo->DEL_DTE
+		,$result->voidNewBillSaleNo->DEL_USR);
+		$this->throwExceptionOnError();
+
+	    if(mysqli_stmt_fetch($stmt)){
+			// OK
+		}
+
+		mysqli_stmt_free_result($stmt);
+////==============================================
+
+		mysqli_stmt_close($stmt);
+
+		return $result;
+	}
 	/**
 	 * updateBillPayment untested
 	 */
 	public function updateBillPayment($saledetail, $itemlist) {
 		$saleNo = $saledetail->saleNo;
-		
+
 		foreach($itemlist as $item){
 			$itemStock = $this->checkItemStock($item->itemIndex); // Query Check Item Qty
 			$saleQTY = $item->saleQTY; 
@@ -1750,13 +1831,13 @@ class SaledetailService {
 			mysqli_stmt_execute($stmt);
 			mysqli_stmt_free_result($stmt);	
 			mysqli_stmt_close($stmt);
-			
+
 			$stmt = mysqli_prepare($this->connection, "UPDATE $this->table_salelist SET stockQTY = ? WHERE itemIndex = ? AND saleNo = ?"); // Update SaleList
 			mysqli_stmt_bind_param($stmt, 'iis', $stockQty, $item->itemIndex, $saleNo);
 			mysqli_stmt_execute($stmt);
 			mysqli_stmt_free_result($stmt);	
 			mysqli_stmt_close($stmt);
-			
+
 			if(sizeof($item->itemOPT)){ // Check Item OPT
 				foreach($item->itemOPT as $itemOpt) // START LOOP ITEM OPT ======================
 				{
@@ -1779,9 +1860,9 @@ class SaledetailService {
 					//} 
 				} // END LOOP ITEM OPT ======================================================
 			}
-		
+
 		}
-		
+
 		// void Order Info
 		//$stmt = mysqli_prepare($this->connection, "UPDATE $this->table_orderinfo SET paid_DTE=? WHERE saleNo=?");
 		$stmt = mysqli_prepare($this->connection, "UPDATE $this->table_orderinfo SET paid_DTE=? WHERE saleNo=?");
@@ -1796,7 +1877,7 @@ class SaledetailService {
 
 		mysqli_stmt_free_result($stmt);
 		mysqli_stmt_close($stmt);
-		
+
 		// void SaleDetail
 		$stmt = mysqli_prepare($this->connection, "UPDATE $this->tablename 
 			SET saleDone=? , 
@@ -1805,7 +1886,7 @@ class SaledetailService {
 			saleTotalBalance=? 
 			WHERE saleNo=?");
 		$this->throwExceptionOnError();
-		
+
 		mysqli_stmt_bind_param($stmt, 'iidds', $saledetail->saleDone, $saledetail->saleTotalAmount, $saledetail->saleTotalDiscount, $saledetail->saleTotalBalance, $saleNo);
 		$this->throwExceptionOnError();
 

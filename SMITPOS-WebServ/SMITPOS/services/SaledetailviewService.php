@@ -1030,6 +1030,57 @@ class SaledetailviewService {
 		return $rows;
 	}
 
+	public function getSaledetailByBill_voidStatus($searchCause, $index = -1, $length = 0)
+	{
+		$limit = "";
+
+		if ($index > -1) {
+			$limit .= " LIMIT {$index}, {$length} ";
+		}
+
+		$searchCause .= $limit;
+
+	    $stmt = mysqli_prepare($this->connection, $searchCause);
+		$this->throwExceptionOnError();
+
+		mysqli_stmt_execute($stmt);
+		$this->throwExceptionOnError();
+
+		$rows = array();
+
+		mysqli_stmt_bind_result($stmt
+		, $row->saleNo
+		, $row->CRE_DTE
+		, $row->saleTotalAmount
+		, $row->saleTotalDiscount
+		, $row->saleTotalBalance
+		, $row->fullname
+		, $row->saleType
+		, $row->saleDone
+		, $row->saleNoNewBill);
+
+	    while (mysqli_stmt_fetch($stmt)) {
+	      $rows[] = $row;
+	      $row = new stdClass();
+	      mysqli_stmt_bind_result($stmt
+			, $row->saleNo
+			, $row->CRE_DTE
+			, $row->saleTotalAmount
+			, $row->saleTotalDiscount
+			, $row->saleTotalBalance
+			, $row->fullname
+			, $row->saleType
+			, $row->saleDone
+			, $row->saleNoNewBill
+			);
+	    }
+
+		mysqli_stmt_free_result($stmt);
+		mysqli_close($this->connection);
+
+		return $rows;
+	}
+
 	public function getSearch_saledetailByBill_Count($searchCause) {
 		$bill_list = $this->getSearch_saledetailByBill($searchCause);
 		return count($bill_list);
