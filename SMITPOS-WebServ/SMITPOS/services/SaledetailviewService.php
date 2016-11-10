@@ -998,6 +998,7 @@ class SaledetailviewService {
 		return $itemProfit_list;
 	}
 
+	// [TBC] Need to fixed this function make mysqli_stmt_bind_result() can bind result object with Dynamically Variable
 	public function getSearch_saledetailByBill($searchCause, $index = -1, $length = 0)
 	{
 		$limit = "";
@@ -1030,7 +1031,10 @@ class SaledetailviewService {
 		return $rows;
 	}
 
-	public function getSaledetailByBill_voidStatus($searchCause, $index = -1, $length = 0)
+	// [TBC] Need to fixed this function make mysqli_stmt_bind_result() can bind result object with Dynamically Variable
+	// this Function is for workaround for only get saleNoNewBill and saleNoOldBill for VOID Bill Feature
+	// this function will be remove when getSearch_saleDetailByBill() can bind result variable Dynamically
+	public function getSearch_saledetailBillStatus($searchCause, $index = -1, $length = 0)
 	{
 		$limit = "";
 
@@ -1057,7 +1061,8 @@ class SaledetailviewService {
 		, $row->fullname
 		, $row->saleType
 		, $row->saleDone
-		, $row->saleNoNewBill);
+		, $row->saleNoNewBill
+		, $row->saleNoOldBill);
 
 	    while (mysqli_stmt_fetch($stmt)) {
 	      $rows[] = $row;
@@ -1072,6 +1077,7 @@ class SaledetailviewService {
 			, $row->saleType
 			, $row->saleDone
 			, $row->saleNoNewBill
+			, $row->saleNoOldBill
 			);
 	    }
 
