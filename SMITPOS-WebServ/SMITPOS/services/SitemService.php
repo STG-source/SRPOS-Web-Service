@@ -998,6 +998,7 @@ class SitemService {
 				ON  `i_movement`. `itemIndex` =  `tb_movement_y`.`sIndex`
 				AND `i_movement`.`CRE_DTE` = `tb_movement_y`.`MINDate`
 		ORDER BY `i_movement`.`itemIndex`) as `tb_startQTY` ON `tb_startQTY`.`itemIndex` = `tb_i`.`itemIndex`
+		WHERE `tb_i`.`DEL_USR` is null
 		");
 		$this->throwExceptionOnError();
 
@@ -1102,6 +1103,7 @@ class SitemService {
 				ON  `i_movement`. `itemIndex` =  `tb_movement_y`.`sIndex`
 				AND `i_movement`.`CRE_DTE` = `tb_movement_y`.`MINDate`
 		ORDER BY `i_movement`.`itemIndex`) as `tb_startQTY` ON `tb_startQTY`.`itemIndex` = `tb_i`.`itemIndex`
+		WHERE `tb_i`.`DEL_USR` is null
 		");
 		$this->throwExceptionOnError();
 
