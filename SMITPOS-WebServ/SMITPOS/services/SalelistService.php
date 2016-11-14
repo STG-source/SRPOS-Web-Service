@@ -315,7 +315,8 @@ class SalelistService {
 		 * 	DEL_DTE:""
 		 * } 
 		 *
-		mysqli_stmt_bind_param($stmt, 'siddsssssss', $item->saleNo, $item->itemIndex, $item->salePrice, $item->saleQTY, $item->saleDiscount, $item->CRE_USR, $item->CRE_DTE, $item->UPD_USR, $item->UPD_DTE, $item->DEL_USR, $item->DEL_DTE); */
+		mysqli_stmt_bind_param($stmt, 'siddsssssss', $item->saleNo, $item->itemIndex, $item->salePrice, $item->saleQTY, $item->saleDiscount, $item->CRE_USR, $item->CRE_DTE, $item->UPD_USR, $item->UPD_DTE, $item->DEL_USR, $item->DEL_DTE);
+		*/
 		$this->throwExceptionOnError(); 
 		
 		/**
@@ -325,7 +326,8 @@ class SalelistService {
 		$this->throwExceptionOnError();
 		
 		mysqli_stmt_bind_param($stmt, 'siddsssssss', $item->saleNo);
-		$this->throwExceptionOnError(); */
+		$this->throwExceptionOnError();
+		*/
 
 		mysqli_stmt_execute($stmt);		
 		$this->throwExceptionOnError();
@@ -342,7 +344,8 @@ class SalelistService {
 	public function getSalelistItem_byBillNo($saleNo) {
 
 	    $stmt = mysqli_prepare($this->connection,
-		"SELECT  `c`.`listIndex` AS  `listIndex` ,  `c`.`saleNo` AS  `saleNo` ,  `c`.`itemIndex` AS  `itemIndex` ,  `j`.`itemID` AS  `itemID` ,  `j`.`itembarcodeID` AS  `itembarcodeID` ,  `j`.`itemName` AS  `itemName` ,  `c`.`salePrice` AS  `salePrice` ,  `c`.`saleQTY` AS  `saleQTY` ,  `c`.`stockQTY` AS  `stockQTY` ,  `c`.`saleDiscount` AS  `saleDiscount` ,  `c`.`saleClass` AS  `saleClass` ,  `c`.`CRE_USR` AS  `CRE_USR` ,  `c`.`CRE_DTE` AS `CRE_DTE` FROM (`salelist`  `c` JOIN  `_item`  `j`) WHERE (`c`.`itemIndex` =  `j`.`itemIndex`) AND (`c`.`saleNo` = '{$saleNo}')");
+		"SELECT  `c`.`listIndex` AS  `listIndex`,  `c`.`saleNo` AS  `saleNo` ,  `c`.`itemIndex` AS  `itemIndex` ,  `j`.`itemID` AS  `itemID` ,  `j`.`itembarcodeID` AS  `itembarcodeID` ,  `j`.`itemName` AS  `itemName` ,  `c`.`salePrice` AS  `salePrice` ,  `c`.`saleQTY` AS  `saleQTY` ,  `c`.`stockQTY` AS  `stockQTY` ,  `c`.`saleDiscount` AS  `saleDiscount` ,  `c`.`saleClass` AS  `saleClass` ,  `c`.`CRE_USR` AS  `CRE_USR` ,  `c`.`CRE_DTE` AS `CRE_DTE` FROM (`salelist`  `c` JOIN  `_item`  `j`) WHERE (`c`.`itemIndex` =  `j`.`itemIndex`) AND (`c`.`saleNo` = '{$saleNo}')
+		AND (LOWER(`c`.`saleClass`) NOT LIKE 'vo')");
 		$this->throwExceptionOnError();
 
 		mysqli_stmt_execute($stmt);

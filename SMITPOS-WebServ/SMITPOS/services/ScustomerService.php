@@ -26,6 +26,7 @@ class ScustomerService {
 	var $port = 3306;
 	var $databasename = "stechschema";
 	var $tablename = "_customer";
+	var $table_saledetail_view = "saledetailview";
 
 	var $connection;
 
@@ -629,8 +630,8 @@ class ScustomerService {
 	      return null;
 		}
 	}
-	
-	
+
+
 	/**
 	 * Returns the item corresponding to the value specified for the primary key.
 	 *
@@ -643,13 +644,13 @@ class ScustomerService {
 
 		$stmt = mysqli_prepare($this->connection, "SELECT * FROM $this->tablename where customerID=?");
 		$this->throwExceptionOnError();
-		
+
 		mysqli_stmt_bind_param($stmt, 's', $CustomerID);		
 		$this->throwExceptionOnError();
-		
+
 		mysqli_stmt_execute($stmt);
 		$this->throwExceptionOnError();
-		
+
 		mysqli_stmt_bind_result($stmt, $row->customerIndex, $row->customerID,
 		$row->fullname, 
 		$row->address, $row->city, $row->province, $row->postcode, 
@@ -658,11 +659,38 @@ class ScustomerService {
 		$row->citizenID, $row->passportID, $row->title,
 		$row->cellPhone, $row->fax,
 		$row->CRE_DTE, $row->CRE_USR, $row->UPD_DTE, $row->UPD_USR, $row->DEL_DTE, $row->DEL_USR);
-		
+
 		if(mysqli_stmt_fetch($stmt)) {
 	      $row->CRE_DTE = new DateTime($row->CRE_DTE);
 	      $row->UPD_DTE = new DateTime($row->UPD_DTE);
 	      $row->DEL_DTE = new DateTime($row->DEL_DTE);
+	      return $row;
+		} else {
+	      return null;
+		}
+	}
+
+	/**
+	 * Returns the item corresponding to the value specified for the customer name
+	 *
+	 * Add authorization or any logical checks for secure access to your data 
+	 *
+	 *
+	 * @return stdClass
+	 */
+	public function get_customerNameBySaleNo($SaleNo) {
+		$stmt = mysqli_prepare($this->connection, "SELECT customerID , fullname FROM $this->table_saledetail_view where saleNo=?");
+		$this->throwExceptionOnError();
+
+		mysqli_stmt_bind_param($stmt, 's', $SaleNo);
+		$this->throwExceptionOnError();
+
+		mysqli_stmt_execute($stmt);
+		$this->throwExceptionOnError();
+
+		mysqli_stmt_bind_result($stmt,$row->customerID,$row->fullname);
+
+		if(mysqli_stmt_fetch($stmt)) {
 	      return $row;
 		} else {
 	      return null;
@@ -727,7 +755,7 @@ class ScustomerService {
 	* Return New Customer ID 
 	**/	
 	public function create_newCustomer($item){
-		
+
 		// Generate CustomerID
 		$strSQL = "SELECT max(customerIndex) + 1 as max_index FROM _customer";
 
@@ -740,7 +768,7 @@ class ScustomerService {
 		mysqli_stmt_bind_result($stmt, $row->max_index);
 
 		$strCustomerID = "";
-		if(mysqli_stmt_fetch($stmt)) {	
+		if(mysqli_stmt_fetch($stmt)) {
 			if (strlen ($row->max_index) == 1){
 				$strCustomerID = "CU0000000".$row->max_index;
 			}elseif(strlen ($row->max_index) == 2){
@@ -756,22 +784,22 @@ class ScustomerService {
 			}elseif(strlen ($row->max_index) == 7){
 				$strCustomerID = "CU0".$row->max_index;
 			}elseif(strlen ($row->max_index) == 8){
-				$strCustomerID = "CU".$row->max_index;							
-			}     	      	
+				$strCustomerID = "CU".$row->max_index;
+			}
 		}
 
-		mysqli_stmt_free_result($stmt);	
+		mysqli_stmt_free_result($stmt);
 
 		$stmt = mysqli_prepare($this->connection, "INSERT INTO $this->tablename (customerID, fullname, address, city, province, postcode, phone, email, customerClass, customerType, customerAVP, customerPoint, citizenID, passportID, title, cellPhone, fax, CRE_DTE, CRE_USR, UPD_DTE ,DEL_DTE ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)");
-		$this->throwExceptionOnError();		
+		$this->throwExceptionOnError();
 
 //		mysqli_stmt_bind_param($stmt, 'ssssssssssddsssssssss', $strCustomerID, $item->fullname, $item->address, $item->city, $item->province, $item->postcode, $item->phone, $item->email, $item->customerClass, $item->customerType, $item->customerAVP, $item->customerPoint, $item->citizenID ,$item->passportID,$item->title,$row->cellPhone,$item->fax, $item->CRE_DTE->format('Y-m-d H:i:s'), $item->CRE_USR, $item->CRE_DTE->format('Y-m-d H:i:s'), $item->CRE_DTE->format('Y-m-d H:i:s'));
 
-		mysqli_stmt_bind_param($stmt, 'ssssssssssddsssssssss', $strCustomerID, $item->fullname, $item->address, $item->city, $item->province, $item->postcode, $item->phone, $item->email, $item->customerClass, $item->customerType, $item->customerAVP, $item->customerPoint, $item->citizenID ,$item->passportID,$item->title,$row->cellPhone,$item->fax, $item->CRE_DTE->toString('Y-m-d H:i:s'), $item->CRE_USR, $item->UPD_DTE->toString('YYYY-MM-dd HH:mm:ss'), $item->DEL_DTE->toString('Y-m-d H:i:s'));
+		mysqli_stmt_bind_param($stmt, 'ssssssssssddsssssssss', $strCustomerID, $item->fullname, $item->address, $item->city, $item->province, $item->postcode, $item->phone, $item->email, $item->customerClass, $item->customerType, $item->customerAVP, $item->customerPoint, $item->citizenID ,$item->passportID,$item->title,$row->cellPhone,$item->fax, $item->CRE_DTE->toString('YYYY-MM-dd HH:mm:ss'), $item->CRE_USR, $item->UPD_DTE->toString('YYYY-MM-dd HH:mm:ss'), $item->DEL_DTE->toString('YYYY-MM-dd HH:mm:ss'));
 
 		$this->throwExceptionOnError();
 
-		mysqli_stmt_execute($stmt);		
+		mysqli_stmt_execute($stmt);
 		$this->throwExceptionOnError();
 
 		//$autoid = mysqli_stmt_insert_id($stmt);
