@@ -998,6 +998,7 @@ class SaledetailviewService {
 		return $itemProfit_list;
 	}
 
+	// [TBC] Need to fixed this function make mysqli_stmt_bind_result() can bind result object with Dynamically Variable
 	public function getSearch_saledetailByBill($searchCause, $index = -1, $length = 0)
 	{
 		$limit = "";
@@ -1022,6 +1023,62 @@ class SaledetailviewService {
 	      $rows[] = $row;
 	      $row = new stdClass();
 	      mysqli_stmt_bind_result($stmt, $row->saleNo, $row->CRE_DTE, $row->saleTotalAmount, $row->saleTotalDiscount, $row->saleTotalBalance, $row->fullname, $row->saleType, $row->saleDone);
+	    }
+
+		mysqli_stmt_free_result($stmt);
+		mysqli_close($this->connection);
+
+		return $rows;
+	}
+
+	// [TBC] Need to fixed this function make mysqli_stmt_bind_result() can bind result object with Dynamically Variable
+	// this Function is for workaround for only get saleNoNewBill and saleNoOldBill for VOID Bill Feature
+	// this function will be remove when getSearch_saleDetailByBill() can bind result variable Dynamically
+	public function getSearch_saledetailBillStatus($searchCause, $index = -1, $length = 0)
+	{
+		$limit = "";
+
+		if ($index > -1) {
+			$limit .= " LIMIT {$index}, {$length} ";
+		}
+
+		$searchCause .= $limit;
+
+	    $stmt = mysqli_prepare($this->connection, $searchCause);
+		$this->throwExceptionOnError();
+
+		mysqli_stmt_execute($stmt);
+		$this->throwExceptionOnError();
+
+		$rows = array();
+
+		mysqli_stmt_bind_result($stmt
+		, $row->saleNo
+		, $row->CRE_DTE
+		, $row->saleTotalAmount
+		, $row->saleTotalDiscount
+		, $row->saleTotalBalance
+		, $row->fullname
+		, $row->saleType
+		, $row->saleDone
+		, $row->saleNoNewBill
+		, $row->saleNoOldBill);
+
+	    while (mysqli_stmt_fetch($stmt)) {
+	      $rows[] = $row;
+	      $row = new stdClass();
+	      mysqli_stmt_bind_result($stmt
+			, $row->saleNo
+			, $row->CRE_DTE
+			, $row->saleTotalAmount
+			, $row->saleTotalDiscount
+			, $row->saleTotalBalance
+			, $row->fullname
+			, $row->saleType
+			, $row->saleDone
+			, $row->saleNoNewBill
+			, $row->saleNoOldBill
+			);
 	    }
 
 		mysqli_stmt_free_result($stmt);
